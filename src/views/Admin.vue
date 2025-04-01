@@ -187,10 +187,10 @@
       </div>
 
       <div class="flex items-center justify-end space-x-2 py-4">
-        <div class="flex-1 text-sm text-muted-foreground">
+        <!-- <div class="flex-1 text-sm text-muted-foreground">
           {{ table.getFilteredSelectedRowModel().rows.length }} von
           {{ table.getFilteredRowModel().rows.length }} Objekt(en) ausgewählt.
-        </div>
+        </div> -->
         <div class="space-x-2">
           <Button
             variant="outline"
