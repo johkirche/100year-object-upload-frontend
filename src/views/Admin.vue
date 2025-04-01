@@ -287,6 +287,7 @@ const fetchData = async (page = currentPage.value, itemsPerPage = pageSize.value
         readItems('objekt', {
           fields: [
             'id',
+            'abbildung',
             'name',
             'datierung',
             'art',
@@ -439,21 +440,29 @@ const columns: ColumnDef<ItemsObjekt>[] = [
     enableSorting: false,
     enableHiding: false,
   },
-  // {
-  //   id: 'select',
-  //   header: ({ table }) => h(Checkbox, {
-  //     'modelValue': table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate'),
-  //     'onUpdate:modelValue': value => table.toggleAllPageRowsSelected(!!value),
-  //     'ariaLabel': 'Alle auswählen',
-  //   }),
-  //   cell: ({ row }) => h(Checkbox, {
-  //     'modelValue': row.getIsSelected(),
-  //     'onUpdate:modelValue': value => row.toggleSelected(!!value),
-  //     'ariaLabel': 'Zeile auswählen',
-  //   }),
-  //   enableSorting: false,
-  //   enableHiding: false,
-  // },
+  {
+    id: 'abbildung',
+    header: 'Bild',
+    cell: ({ row }) => {
+      const imageId = row.original.abbildung;
+      if (!imageId) {
+        return h('div', { class: 'w-10 h-10 rounded-md bg-gray-100 flex items-center justify-center' }, 
+          h('span', { class: 'text-gray-400 text-xs text-center' }, 'Kein Bild'));
+      }
+      
+      // Create thumbnail URL using Directus assets endpoint
+      const thumbnailUrl = `${authStore.getClient().url}/assets/${imageId}?width=48&height=48&fit=cover&quality=90`;
+      
+      return h('img', {
+        src: thumbnailUrl,
+        class: 'w-10 h-10 object-cover rounded-md',
+        alt: row.original.name || 'Objektbild',
+        loading: 'lazy',
+        onerror: 'this.onerror=null; this.src=\'\'; this.classList.add(\'bg-gray-100\'); this.alt=\'Bild nicht verfügbar\''
+      });
+    },
+    enableSorting: false,
+  },
   {
     accessorKey: 'name',
     header: ({ column }) => {
@@ -466,27 +475,52 @@ const columns: ColumnDef<ItemsObjekt>[] = [
   },
   {
     accessorKey: 'datierung',
-    header: 'Datierung',
+    header: ({ column }) => {
+      return h(Button, {
+        variant: 'ghost',
+        onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
+      }, () => ['Datierung', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })])
+    },
     cell: ({ row }) => h('div', {}, row.getValue('datierung')),
   },
   {
     accessorKey: 'art',
-    header: 'Art',
+    header: ({ column }) => {
+      return h(Button, {
+        variant: 'ghost',
+        onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
+      }, () => ['Art', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })])
+    },
     cell: ({ row }) => h('div', {}, row.getValue('art')),
   },
   {
     accessorKey: 'format',
-    header: 'Format',
+    header: ({ column }) => {
+      return h(Button, {
+        variant: 'ghost',
+        onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
+      }, () => ['Format', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })])
+    },
     cell: ({ row }) => h('div', {}, row.getValue('format')),
   },
   {
     accessorKey: 'einreicherName',
-    header: 'Einreicher',
+    header: ({ column }) => {
+      return h(Button, {
+        variant: 'ghost',
+        onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
+      }, () => ['Einreicher', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })])
+    },
     cell: ({ row }) => h('div', {}, row.getValue('einreicherName')),
   },
   {
     accessorKey: 'status',
-    header: 'Status',
+    header: ({ column }) => {
+      return h(Button, {
+        variant: 'ghost',
+        onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
+      }, () => ['Status', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })])
+    },
     cell: ({ row }) => {
       const status = row.getValue('status') as string
 
@@ -523,7 +557,12 @@ const columns: ColumnDef<ItemsObjekt>[] = [
   },
   {
     accessorKey: 'bewertung',
-    header: 'Bewertung',
+    header: ({ column }) => {
+      return h(Button, {
+        variant: 'ghost',
+        onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
+      }, () => ['Bewertung', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })])
+    },
     cell: ({ row }) => {
       const rating = row.getValue('bewertung') as number | null
       if (rating === null) return h('div', {
