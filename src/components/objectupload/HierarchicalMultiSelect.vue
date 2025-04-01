@@ -37,24 +37,6 @@ const selectedValues = computed({
     set: (value: string[]) => emit('update:modelValue', value)
 })
 
-// Helper function to collect all values from a hierarchical structure
-const getAllValues = (option: Option): string[] => {
-    let values = [option.value]
-
-    if (option.children) {
-        option.children.forEach(child => {
-            values.push(child.value)
-        })
-    }
-
-    return values
-}
-
-// Helper function to get direct child values
-const getChildValues = (option: Option): string[] => {
-    return option.children ? option.children.map(child => child.value) : []
-}
-
 // Check if parent is checked (all children are selected)
 const isParentChecked = (option: Option): boolean => {
     return selectedValues.value.includes(option.value)
@@ -110,7 +92,7 @@ const toggleChild = (child: Option, parent: Option): void => {
                     <ChevronDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
             </PopoverTrigger>
-            <PopoverContent class="w-96 p-0 max-h-[500px] overflow-y-auto">
+            <PopoverContent class="w-full p-0 max-h-[500px] overflow-y-auto">
                 <Command>
                     <CommandInput :placeholder="'Suchen...'" />
                     <CommandEmpty>Keine Ergebnisse gefunden.</CommandEmpty>

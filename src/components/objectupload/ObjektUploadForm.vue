@@ -41,7 +41,7 @@ const formSchema = toTypedSchema(
             .max(128, { message: 'Name darf maximal 128 Zeichen haben' }),
         datierung: z.string().optional(),
         beschreibung: z.string().max(4096, { message: 'Beschreibung darf maximal 4096 Zeichen haben' }),
-        // art: z.array(z.string()).optional(),
+        kategorie: z.array(z.string()).optional(),
         art: z.string().optional(),
         format: z.string().optional(),
         einreicherName: z.string({ required_error: 'Einreicher Name ist erforderlich' }).min(2, { message: 'Einreicher Name muss mindestens 2 Zeichen haben' }),
@@ -111,6 +111,7 @@ async function onSubmit(values: any) {
             datierung: values.datierung,
             abbildung: hauptbildId,
             beschreibung: values.beschreibung,
+            kategorie: values.kategorie,
             art: values.art,
             format: values.format,
             einreicherName: values.einreicherName,
@@ -186,9 +187,9 @@ async function onSubmit(values: any) {
                     <div><strong>Name:</strong> {{ submittedValues.name }}</div>
                     <div v-if="submittedValues.datierung"><strong>Datierung:</strong> {{ submittedValues.datierung }}
                     </div>
-                    <!-- <div v-if="submittedValues.art && submittedValues.art.length"><strong>Kategorien:</strong> {{
-                        submittedValues.art.join(', ') }}</div> -->
-                    <div v-if="submittedValues.art"><strong>Kategorien:</strong> {{ submittedValues.art }}</div>
+                    <div v-if="submittedValues.kategorie && submittedValues.kategorie.length"><strong>Kategorien:</strong> {{
+                        submittedValues.kategorie.join(', ') }}</div>
+                    <div v-if="submittedValues.art"><strong>Art:</strong> {{ submittedValues.art }}</div>
                     <div v-if="submittedValues.format"><strong>Format:</strong> {{ submittedValues.format }}</div>
                     <div><strong>Einreicher:</strong> {{ submittedValues.einreicherName }} <span
                             v-if="submittedValues.einreicherGemeinde && submittedValues.einreicherGemeinde !== '--keine Angabe--'">({{
@@ -274,28 +275,14 @@ async function onSubmit(values: any) {
 
                 <FormField name="art" v-slot="{ field, errorMessage }">
                     <FormItem>
-                        <FormLabel>Kategorien</FormLabel>
+                        <FormLabel>Objektart / Material / Medium</FormLabel>
                         <FormControl>
-                            <Input v-bind="field" placeholder="z.B. Bild, Text, Musik, ..." />
+                            <Input v-bind="field" placeholder="z.B. Foto, Broschüre, Gegenstand, Kleidungsstück, Filmaufnahme, ..." />
                         </FormControl>
-                        <FormDescription>Kategorien, die das Objekt am besten beschreiben</FormDescription>
+                        <FormDescription>Material, Medium oder Art des Objekts</FormDescription>
                         <FormMessage>{{ errorMessage }}</FormMessage>
                     </FormItem>
                 </FormField>
-
-                <!-- <FormField name="art" v-slot="{ field, errorMessage }">
-                    <FormItem>
-                        <FormLabel>Kategorien</FormLabel>
-                        <FormControl>
-                            <HierarchicalMultiSelect :options="categoryOptions" :model-value="field.value"
-                                @update:model-value="field.onChange($event)" placeholder="Kategorie(n) auswählen ..." />
-                        </FormControl>
-                        <FormDescription>
-                            Wählen Sie eine oder mehrere Kategorien aus
-                        </FormDescription>
-                        <FormMessage>{{ errorMessage }}</FormMessage>
-                    </FormItem>
-                </FormField> -->
 
                 <FormField name="format" v-slot="{ field, errorMessage }">
                     <FormItem>
@@ -308,6 +295,20 @@ async function onSubmit(values: any) {
                     </FormItem>
                 </FormField>
             </div>
+
+            <FormField name="kategorie" v-slot="{ field, errorMessage }">
+                <FormItem>
+                    <FormLabel>Kategorien</FormLabel>
+                    <FormControl>
+                        <HierarchicalMultiSelect :options="categoryOptions" :model-value="field.value"
+                            @update:model-value="field.onChange($event)" placeholder="Kategorie(n) auswählen ..." />
+                    </FormControl>
+                    <FormDescription>
+                        Wählen Sie eine oder mehrere Kategorien aus
+                    </FormDescription>
+                    <FormMessage>{{ errorMessage }}</FormMessage>
+                </FormItem>
+            </FormField>
 
             <FormField name="beschreibung" v-slot="{ field, errorMessage }">
                 <FormItem>
