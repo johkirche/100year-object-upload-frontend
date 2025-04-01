@@ -18,14 +18,6 @@ const routes: Array<RouteRecordRaw> = [
     }
   },
   {
-    path: '/about',
-    name: 'About',
-    component: () => import('../views/About.vue'),
-    meta: {
-      requiresAuth: true
-    }
-  },
-  {
     path: '/admin',
     name: 'Admin',
     component: () => import('@/views/Admin.vue'),
@@ -64,7 +56,7 @@ router.beforeEach((to, from, next) => {
   }
 
   // If route requires admin role but user is not admin, redirect to home
-  if (requiresAdmin && (!authStore.user || !authStore.user.isAdmin)) {
+  if (requiresAdmin && !authStore.isAdmin) {
     next({ name: 'Home' })
     return
   }

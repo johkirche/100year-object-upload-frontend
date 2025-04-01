@@ -1,0 +1,8 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Component libary: 
+Make sure you always use shadcn-vue component when you create components. 

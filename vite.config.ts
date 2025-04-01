@@ -16,4 +16,13 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  server: {
+    proxy: {
+      '/directus': {
+        target: 'https://jk100-admin.johannische-kirche.org',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/directus/, ''),
+      },
+    },
+  },
 })

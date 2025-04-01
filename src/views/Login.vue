@@ -6,25 +6,26 @@
           Sign in to your account
         </h2>
       </div>
-      <Alert variant="destructive" v-if="error">
+      <Alert variant="destructive" v-if="authStore.error">
         <AlertCircle class="w-4 h-4" />
         <AlertTitle>Error</AlertTitle>
         <AlertDescription>
-        {{ error }}
+        {{ authStore.error }}
         </AlertDescription>
-    </Alert>
+      </Alert>
       <Form @submit="handleSubmit" class="mt-8 space-y-6">
         <div class="space-y-4">
           <FormField name="username" v-slot="{ field }">
             <FormItem>
-              <FormLabel>Username</FormLabel>
+              <FormLabel>Email</FormLabel>
               <FormControl>
                 <Input 
                   v-model="username" 
-                  type="text" 
+                  type="email" 
                   required 
-                  autocomplete="username" 
-                  placeholder="Username" 
+                  autocomplete="email" 
+                  placeholder="Email address" 
+                  :disabled="authStore.isLoading"
                 />
               </FormControl>
             </FormItem>
@@ -40,6 +41,7 @@
                   required 
                   autocomplete="current-password" 
                   placeholder="Password" 
+                  :disabled="authStore.isLoading"
                 />
               </FormControl>
             </FormItem>
@@ -47,7 +49,10 @@
         </div>
 
         <div>
-          <Button type="submit" class="w-full">Sign in</Button>
+          <Button type="submit" class="w-full" :disabled="authStore.isLoading">
+            <span v-if="authStore.isLoading">Signing in...</span>
+            <span v-else>Sign in</span>
+          </Button>
         </div>
       </Form>
     </div>
@@ -55,7 +60,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { Button } from '@/components/ui/button'
@@ -69,15 +74,20 @@ const authStore = useAuthStore()
 
 const username = ref('')
 const password = ref('')
-const error = ref('')
 
-const handleSubmit = () => {
-  error.value = ''
-  
-  if (authStore.login(username.value, password.value)) {
+onMounted(() => {
+  if (authStore.isAuthenticated) {
     router.push('/')
-  } else {
-    error.value = 'Invalid username or password'
+  }
+})
+
+const handleSubmit = async () => {
+  // Call the login method from the auth store
+  await authStore.login(username.value, password.value)
+  
+  // If login is successful, redirect to home page
+  if (authStore.isAuthenticated) {
+    router.push('/')
   }
 }
 </script> 

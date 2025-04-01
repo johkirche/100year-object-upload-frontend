@@ -6,15 +6,19 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "openapi-ts": "openapi-ts"
   },
   "dependencies": {
+    "@directus/sdk": "^19.1.0",
+    "@hey-api/client-fetch": "^0.8.4",
     "@tanstack/vue-table": "^8.21.2",
     "@vee-validate/zod": "^4.15.0",
     "@vueuse/core": "^13.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-vue-next": "^0.484.0",
+    "openapi-fetch": "^0.13.5",
     "pinia": "^3.0.1",
     "reka-ui": "^2.1.1",
     "tailwind-merge": "^3.0.2",
@@ -25,12 +29,14 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@hey-api/openapi-ts": "^0.64.15",
     "@types/node": "^22.13.14",
     "@vitejs/plugin-vue": "^5.2.1",
     "@vue/tsconfig": "^0.7.0",
     "autoprefixer": "^10.4.21",
+    "openapi-typescript": "^7.6.1",
     "tailwindcss": "3",
-    "typescript": "~5.7.2",
+    "typescript": "~5.7.3",
     "vite": "^6.2.0",
     "vue-tsc": "^2.2.4"
   },
