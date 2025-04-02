@@ -4,6 +4,7 @@ import { X, File as FileIcon } from 'lucide-vue-next'
 
 import { Checkbox } from '@/components/ui/checkbox/'
 import { Progress } from '@/components/ui/progress/'
+import { Alert, AlertTitle } from '@/components/ui/alert'
 
 import { useAuthStore } from '@/stores/auth'
 import ImageDropzone from './ImageDropzone.vue'
@@ -16,6 +17,7 @@ interface FileItem {
   uploaded?: boolean;
   progress?: number;
   isImage: boolean;
+  error?: string;
 }
 
 interface Props {
@@ -23,25 +25,60 @@ interface Props {
   error?: string | null;
   isUploading?: boolean;
   disableUploadArea?: boolean;
+  maxFileSize?: number; // in bytes
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  maxFileSize: 10 * 1024 * 1024 // 10MB default
+})
 const emit = defineEmits(['update:modelValue', 'error'])
 
 // Local reference to the files array
 const isUploading = ref(false)
+const fileSizeError = ref<string | null>(null)
 
 // Get authentication from store
 const { getAuthToken } = useAuthStore()
+
+// Clear file size error
+function clearFileSizeError() {
+  fileSizeError.value = null
+}
 
 // Check if a file is an image
 function isImageFile(file: File): boolean {
   return file.type.startsWith('image/')
 }
 
+// Format file size to human readable format
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return bytes + ' B'
+  else if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
+  else return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
+}
+
+// Check if file is within size limit
+function isFileSizeValid(file: File): boolean {
+  return file.size <= props.maxFileSize
+}
+
 // Handle new files being added
 function handleFilesAdded(files: File[]) {
-  const newFiles: FileItem[] = files.map(file => {
+  // Reset previous file size errors
+  fileSizeError.value = null
+  
+  // Filter out files that exceed the size limit
+  const oversizedFiles = files.filter(file => !isFileSizeValid(file))
+  const validFiles = files.filter(file => isFileSizeValid(file))
+  
+  // Display error for oversized files
+  if (oversizedFiles.length > 0) {
+    const fileNames = oversizedFiles.map(f => `"${f.name}" (${formatFileSize(f.size)})`).join(', ')
+    fileSizeError.value = `Folgende Dateien überschreiten das Limit von ${formatFileSize(props.maxFileSize)}: ${fileNames}`
+  }
+  
+  // Only process valid files
+  const newFiles: FileItem[] = validFiles.map(file => {
     const isImage = isImageFile(file)
     return {
       file,
@@ -342,8 +379,24 @@ defineExpose({
     <div v-if="!props.disableUploadArea">
       <h2 class="text-lg font-semibold mb-2">Dateien hochladen (mind. 1 Bild erforderlich)</h2>
       <ImageDropzone @files-added="handleFilesAdded" :disabled="isUploading" :acceptAllFiles="true" />
-      <p class="mt-2 text-sm text-gray-500">Bitte markieren Sie ein Bild als Hauptbild durch auswählen der Checkbox</p>
+      <p class="mt-2 text-sm text-gray-500">
+        Bitte markieren Sie ein Bild als Hauptbild durch auswählen der Checkbox.
+        Maximale Dateigröße: {{ formatFileSize(props.maxFileSize) }}
+      </p>
     </div>
+    
+    <!-- File Size Error Alert -->
+    <Alert v-if="fileSizeError" variant="destructive" class="mt-4 relative">
+      <button 
+        type="button"
+        class="absolute right-2 top-2 p-1 rounded-full hover:border-red-500"
+        @click="clearFileSizeError"
+        aria-label="Dismiss"
+      >
+        <X class="h-4 w-4" />
+      </button>
+      <AlertTitle>{{ fileSizeError }}</AlertTitle>
+    </Alert>
     
     <!-- Display Error if any -->
     <div v-if="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded my-6">
