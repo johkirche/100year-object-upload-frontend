@@ -1,7 +1,7 @@
-# networks:
-#   nginx-net:
-#     external:
-#       name: nginx-net
+networks:
+  nginx-net:
+    external:
+      name: nginx-net
 
 
 services:
@@ -19,5 +19,5 @@ services:
       - .env
     ports:
       - ${FRONTEND_PUBLIC_PORT}:80
-    # networks:
-    #   - nginx-net
+    networks:
+      - nginx-net

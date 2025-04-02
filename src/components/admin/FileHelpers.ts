@@ -90,11 +90,14 @@ export const getImageThumbnailUrl = (fileData: any, directusUrl: string, token: 
   
   if (!fileId) return '';
   
+  // Remove trailing slash from directusUrl if present
+  const normalizedDirectusUrl = directusUrl.endsWith('/') ? directusUrl.slice(0, -1) : directusUrl;
+  
   // if width or height is 0, don't add them to the url 
   let widthParam = width > 0 ? `&width=${width}` : '';
   let heightParam = height > 0 ? `&height=${height}` : '';
 
-  return `${directusUrl}/assets/${fileId}?${widthParam}${heightParam}&fit=cover&quality=80&access_token=${token}`;
+  return `${normalizedDirectusUrl}/assets/${fileId}?${widthParam}${heightParam}&fit=cover&quality=80&access_token=${token}`;
 };
 
 /**
@@ -129,5 +132,8 @@ export const getAssetUrl = (fileData: any, directusUrl: string, token: string, d
   
   if (!fileId) return '';
   
-  return `${directusUrl}/assets/${fileId}${download ? '?download=true' : ''}${token ? `${download ? '&' : '?'}access_token=${token}` : ''}`;
+  // Remove trailing slash from directusUrl if present
+  const normalizedDirectusUrl = directusUrl.endsWith('/') ? directusUrl.slice(0, -1) : directusUrl;
+  
+  return `${normalizedDirectusUrl}/assets/${fileId}${download ? '?download=true' : ''}${token ? `${download ? '&' : '?'}access_token=${token}` : ''}`;
 }; 
