@@ -258,6 +258,8 @@ import { readItems, updateItem } from '@directus/sdk'
 const authStore = useAuthStore()
 const directus = authStore.getClient()
 
+const token = ref<string>('')
+
 // Data state
 const data = ref<ItemsObjekt[]>([])
 const isLoading = ref(true)
@@ -344,10 +346,12 @@ const handleTableChange = () => {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   // Initialize auth and fetch data
-  authStore.initAuth().then(() => {
+  authStore.initAuth().then(async () => {
     if (authStore.isAuthenticated) {
+      token.value = await authStore.getAuthToken()
+
       fetchData()
     } else {
       error.value = 'Bitte melden Sie sich an, um die Daten zu sehen'
@@ -451,7 +455,7 @@ const columns: ColumnDef<ItemsObjekt>[] = [
       }
       
       // Create thumbnail URL using Directus assets endpoint
-      const thumbnailUrl = `${authStore.getClient().url}/assets/${imageId}?width=48&height=48&fit=cover&quality=90`;
+      const thumbnailUrl = `${authStore.getClient().url}/assets/${imageId}?width=48&height=48&fit=cover&quality=90&access_token=${token.value}`;
       
       return h('img', {
         src: thumbnailUrl,

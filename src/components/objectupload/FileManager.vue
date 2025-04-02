@@ -29,12 +29,10 @@ const props = defineProps<Props>()
 const emit = defineEmits(['update:modelValue', 'error'])
 
 // Local reference to the files array
-const files = ref<FileItem[]>(props.modelValue)
 const isUploading = ref(false)
 
 // Get authentication from store
-const authStore = useAuthStore()
-const client = authStore.getClient()
+const { getAuthToken } = useAuthStore()
 
 // Check if a file is an image
 function isImageFile(file: File): boolean {
@@ -132,20 +130,6 @@ function setAsMainFile(index: number) {
   }
 }
 
-// Get authentication token
-async function getAuthToken(): Promise<string> {
-  try {
-    // @ts-ignore - Assuming the client has a getToken method
-    const token = await client.getToken()
-    if (typeof token === 'string') {
-      return token
-    }
-    return ''  // Return empty string if no token found
-  } catch (e) {
-    console.error('Error getting token:', e)
-    return ''
-  }
-}
 
 // Upload a single file with progress tracking
 async function uploadSingleFile(fileItem: FileItem, title: string): Promise<string> {

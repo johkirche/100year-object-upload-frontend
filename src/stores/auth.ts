@@ -176,6 +176,22 @@ export const useAuthStore = defineStore('auth', () => {
     return directus
   }
 
+  // Get authentication token
+  async function getAuthToken(): Promise<string> {
+    try {
+      // @ts-ignore - Assuming the client has a getToken method
+      const token = await directus.getToken()
+      if (typeof token === 'string') {
+        return token
+      }
+      return ''  // Return empty string if no token found
+    } catch (e) {
+      console.error('Error getting token:', e)
+      return ''
+    }
+  }
+
+
   return {
     isAdmin,
     isAuthenticated,
@@ -184,6 +200,7 @@ export const useAuthStore = defineStore('auth', () => {
     login,
     logout,
     getClient,
-    initAuth
+    initAuth,
+    getAuthToken
   }
 }) 
