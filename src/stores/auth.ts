@@ -47,6 +47,9 @@ export const useAuthStore = defineStore('auth', () => {
   // Create storage for persistent authentication
   const storage = new LocalStorage()
 
+  console.log("DIRECTUS_URL: " + DIRECTUS_URL);
+  
+
   // Create directus client with custom storage
   const directus = createDirectus(DIRECTUS_URL)
     .with(authentication('json', { storage }))
