@@ -1,0 +1,14 @@
+services:
+  frontend:
+    depends_on:
+      - directus
+    restart: "unless-stopped"
+    build:
+      context: ./
+      dockerfile: Dockerfile.frontend
+    environment:
+      VIRTUAL_HOST: "${NGINX_SERVER_NAME}"
+      LETSENCRYPT_HOST: "${NGINX_SERVER_NAME}"
+      LETSENCRYPT_EMAIL: "${LETSENCRYPT_EMAIL}"
+    ports:
+      - ${FRONTEND_PUBLIC_PORT}:80

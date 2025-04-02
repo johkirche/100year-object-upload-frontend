@@ -54,12 +54,21 @@ export const useAuthStore = defineStore('auth', () => {
 
   // Computed user object that maps to our app's User interface
   const isAdmin = computed<boolean>(() => {
-    if (!directusUser.value) return false
+    if (!directusUser.value) {
+      return false
+    }
+    
     
     // Check if user has admin role by comparing role ID with the admin role ID
-    const isAdmin = typeof directusUser.value.role === 'object' 
-      ? directusUser.value.role?.id === ADMIN_ROLE_ID
-      : directusUser.value.role === ADMIN_ROLE_ID
+    let roleId: string | null = null
+    
+    if (typeof directusUser.value.role === 'object' && directusUser.value.role !== null) {
+      roleId = directusUser.value.role.id || null
+    } else if (typeof directusUser.value.role === 'string') {
+      roleId = directusUser.value.role
+    }
+    
+    const isAdmin = roleId === ADMIN_ROLE_ID
     
     return isAdmin
   })
@@ -83,7 +92,7 @@ export const useAuthStore = defineStore('auth', () => {
             isAuthenticated.value = true
             await fetchCurrentUser()
           } catch (refreshErr) {
-            console.error('Token refresh failed:', refreshErr)
+            console.error('Auth init: Token refresh failed:', refreshErr)
             // Clear invalid tokens
             storage.set(null)
             isAuthenticated.value = false
@@ -95,14 +104,16 @@ export const useAuthStore = defineStore('auth', () => {
           await fetchCurrentUser()
         }
       } catch (err) {
-        console.error('Error initializing auth:', err)
+        console.error('Auth init: Error initializing auth:', err)
         storage.set(null)
         isAuthenticated.value = false
         directusUser.value = null
       } finally {
         isLoading.value = false
       }
+    } else {
     }
+    
   }
 
   /**
@@ -111,10 +122,11 @@ export const useAuthStore = defineStore('auth', () => {
   async function fetchCurrentUser(): Promise<void> {
     try {
       // Get current user from Directus using the readMe helper
+      // Request more fields to ensure we have complete role information
       const currentUser = await directus.request(readMe({
-        fields: ['role']
+        fields: ['*', 'role.*']
       })) as Partial<Users>
-      
+            
       if (currentUser) {
         directusUser.value = currentUser
       }

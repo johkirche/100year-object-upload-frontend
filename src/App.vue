@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useAuthStore } from './stores/auth'
-import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -11,10 +10,8 @@ import Toaster from '@/components/ui/toast/Toaster.vue'
 const authStore = useAuthStore()
 const router = useRouter()
 
-// Check for existing authentication on app start
-onMounted(async () => {
-  await authStore.initAuth()
-})
+// No need to initialize auth here as it's now handled by the router
+// This prevents the race condition where route guards run before auth is ready
 
 // Handle logout
 const handleLogout = async () => {

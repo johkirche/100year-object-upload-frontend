@@ -1,0 +1,41 @@
+# Build env
+FROM node:20-alpine as build-npm-stage
+
+WORKDIR /app
+
+RUN npm install -g pnpm
+
+COPY package*.json ./
+COPY pnpm-lock.yaml ./
+
+RUN pnpm install
+
+COPY vite.config.ts ./
+COPY index.html ./
+COPY public ./public
+COPY src ./src
+
+COPY tailwind.config.js ./
+COPY tsconfig.app.json ./
+COPY tsconfig.json ./
+COPY tsconfig.node.json ./
+COPY vite.config.ts ./
+
+# COPY .env ./.env
+COPY env.d.ts ./env.d.ts
+
+RUN pnpm run build-only
+
+#RUN npm install -g lite-server
+#EXPOSE 80
+#CMD ["lite-server", "--baseDir", "/app/dist", "--port", "80"]
+
+
+# Run env
+FROM nginx:stable-alpine
+COPY --from=build-npm-stage /app/dist /usr/share/nginx/html
+COPY nginx.template.conf /etc/nginx/templates/default.conf.template
+
+EXPOSE 80
+# Modified CMD to include BACKEND_URL in envsubst
+CMD ["/bin/sh", "-c", "envsubst '${NGINX_SERVER_NAME}' < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]
