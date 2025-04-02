@@ -63,7 +63,7 @@ const toggleParent = (option: Option): void => {
 }
 
 // Toggle child
-const toggleChild = (child: Option, parent: Option): void => {
+const toggleChild = (child: Option): void => {
     let updatedValues = [...selectedValues.value]
 
     if (selectedValues.value.includes(child.value)) {
@@ -115,7 +115,7 @@ const toggleChild = (child: Option, parent: Option): void => {
                                     class="p-0">
                                     <div class="flex items-center space-x-2 p-2 w-full">
                                         <Checkbox :id="child.value" :model-value="isChildChecked(child)"
-                                            @update:model-value="toggleChild(child, option)" />
+                                            @update:model-value="toggleChild(child)" />
                                         <label :for="child.value"
                                             class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer w-full">
                                             {{ child.text }}

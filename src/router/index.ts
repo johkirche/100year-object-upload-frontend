@@ -60,7 +60,7 @@ const ensureAuthInitialized = async () => {
   await initialAuthPromise
 }
 
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to, _, next) => {
   // Wait for auth to be initialized before making routing decisions
   await ensureAuthInitialized()
   

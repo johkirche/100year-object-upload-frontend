@@ -151,59 +151,109 @@ async function uploadSingleFile(fileItem: FileItem, title: string): Promise<stri
   if (!token) {
     throw new Error('Nicht autorisiert. Bitte melden Sie sich an.')
   }
+
+  // Maximum number of retry attempts
+  const MAX_RETRIES = 3
+  // Base delay for exponential backoff (in ms)
+  const BASE_DELAY = 1000
   
-  // Setup XMLHttpRequest to track progress
+  // Setup retry logic with exponential backoff
   return new Promise<string>((resolve, reject) => {
-    const xhr = new XMLHttpRequest()
+    let attempt = 0
     
-    // Track upload progress
-    xhr.upload.addEventListener('progress', (event) => {
-      if (event.lengthComputable) {
-        const percentComplete = Math.round((event.loaded / event.total) * 100)
-        
-        // Update progress for this specific file
-        const updatedFiles = [...props.modelValue]
-        if (updatedFiles[index]) {
-          updatedFiles[index].progress = percentComplete
-          emit('update:modelValue', updatedFiles)
-        }
-      }
-    })
-    
-    xhr.onload = function() {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        try {
-          const response = JSON.parse(xhr.responseText)
+    function attemptUpload() {
+      const xhr = new XMLHttpRequest()
+      
+      // Track upload progress
+      xhr.upload.addEventListener('progress', (event) => {
+        if (event.lengthComputable) {
+          const percentComplete = Math.round((event.loaded / event.total) * 100)
           
-          // Update the file with uploaded status
+          // Update progress for this specific file
           const updatedFiles = [...props.modelValue]
           if (updatedFiles[index]) {
-            updatedFiles[index].uploaded = true
-            updatedFiles[index].id = response.data.id
+            updatedFiles[index].progress = percentComplete
+            emit('update:modelValue', updatedFiles)
+          }
+        }
+      })
+      
+      xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const response = JSON.parse(xhr.responseText)
+            
+            // Update the file with uploaded status
+            const updatedFiles = [...props.modelValue]
+            if (updatedFiles[index]) {
+              updatedFiles[index].uploaded = true
+              updatedFiles[index].id = response.data.id
+              emit('update:modelValue', updatedFiles)
+            }
+            
+            resolve(response.data.id)
+          } catch (error) {
+            handleError('Error parsing response')
+          }
+        } else {
+          handleError(`HTTP Error: ${xhr.status}`)
+        }
+      }
+      
+      xhr.onerror = function() {
+        handleError('Network error')
+      }
+
+      xhr.ontimeout = function() {
+        handleError('Connection timed out')
+      }
+      
+      xhr.onabort = function() {
+        handleError('Upload aborted')
+      }
+
+      function handleError(errorMsg: string) {
+        console.warn(`Upload attempt ${attempt + 1}/${MAX_RETRIES} failed: ${errorMsg}`)
+        
+        if (attempt < MAX_RETRIES - 1) {
+          attempt++
+          // Exponential backoff: delay increases with each retry
+          const delay = BASE_DELAY * Math.pow(2, attempt - 1)
+          console.log(`Retrying upload in ${delay}ms...`)
+          
+          // Update UI to show retry status
+          const updatedFiles = [...props.modelValue]
+          if (updatedFiles[index]) {
+            updatedFiles[index].progress = 0
             emit('update:modelValue', updatedFiles)
           }
           
-          resolve(response.data.id)
-        } catch (error) {
-          reject(new Error('Error parsing response'))
+          setTimeout(attemptUpload, delay)
+        } else {
+          reject(new Error(`Fehler beim Hochladen nach ${MAX_RETRIES} Versuchen: ${errorMsg}`))
         }
-      } else {
-        reject(new Error(`HTTP Error: ${xhr.status}`))
+      }
+      
+      const isDev = import.meta.env.DEV
+      const DIRECTUS_URL = isDev 
+        ? window.location.origin + '/directus/files' 
+        : `${import.meta.env.VITE_DIRECTUS_URL}/files`
+
+      xhr.open('POST', DIRECTUS_URL, true)
+      xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+      
+      // Set longer timeout to prevent premature timeouts
+      xhr.timeout = 60000 // 60 seconds
+      
+      try {
+        xhr.send(formData)
+      } catch (e: unknown) {
+        handleError(`Error sending request: ${e instanceof Error ? e.message : String(e)}`)
       }
     }
     
-    xhr.onerror = function() {
-      reject(new Error('Network error'))
-    }
-    
-    const isDev = import.meta.env.DEV
-    const DIRECTUS_URL = isDev 
-    ? window.location.origin + '/directus/files' 
-    : `${import.meta.env.VITE_DIRECTUS_URL}/files`
-
-    xhr.open('POST', DIRECTUS_URL, true)
-    xhr.setRequestHeader('Authorization', `Bearer ${token}`)
-    xhr.send(formData)
+    // Start the first upload attempt
+    attemptUpload()
   })
 }
 
@@ -222,31 +272,58 @@ async function uploadAllFiles(objectName: string) {
     isUploading.value = true
     emit('error', null)
     
-    // First upload the main image
-    const hauptbildTitle = `Hauptbild: ${objectName}`
-    const hauptbildId = await uploadSingleFile(mainImage, hauptbildTitle)
+    let hauptbildId = ''
+    let additionalFileIds: string[] = []
     
-    // Then upload any additional files
-    const additionalFileIds: string[] = []
+    // First upload the main image with better error handling
+    try {
+      const hauptbildTitle = `Hauptbild: ${objectName}`
+      hauptbildId = await uploadSingleFile(mainImage, hauptbildTitle)
+    } catch (error: unknown) {
+      console.error('Error uploading main image:', error)
+      throw new Error(`Hauptbild konnte nicht hochgeladen werden: ${error instanceof Error ? error.message : String(error)}`)
+    }
+    
+    // Then upload any additional files with better error handling
     const additionalFiles = props.modelValue.filter(file => !file.isMain)
     
-    for (const file of additionalFiles) {
+    // Use Promise.allSettled to continue even if some files fail
+    const uploadPromises = additionalFiles.map(async (file, i) => {
       if (file) {
-        const index = additionalFiles.indexOf(file) + 1
-        const fileType = file.isImage ? 'Bild' : 'Datei'
-        const additionalTitle = `Weiteres ${fileType} ${index}: ${objectName}`
-        const fileId = await uploadSingleFile(file, additionalTitle)
-        additionalFileIds.push(fileId)
+        try {
+          const index = i + 1
+          const fileType = file.isImage ? 'Bild' : 'Datei'
+          const additionalTitle = `Weiteres ${fileType} ${index}: ${objectName}`
+          return await uploadSingleFile(file, additionalTitle)
+        } catch (error: unknown) {
+          console.error(`Error uploading additional file ${i+1}:`, error)
+          throw error
+        }
       }
+      return null
+    })
+    
+    const results = await Promise.allSettled(uploadPromises)
+    
+    // Filter out successful uploads
+    additionalFileIds = results
+      .filter((result): result is PromiseFulfilledResult<string> => 
+        result.status === 'fulfilled' && result.value !== null)
+      .map(result => result.value)
+    
+    // Warn about failed uploads
+    const failedUploads = results.filter(result => result.status === 'rejected')
+    if (failedUploads.length > 0) {
+      console.warn(`${failedUploads.length} additional files failed to upload`)
     }
     
     return {
       hauptbildId,
       additionalFileIds
     }
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Upload error:', error)
-    throw new Error('Fehler beim Hochladen')
+    throw new Error(error instanceof Error ? error.message : 'Fehler beim Hochladen')
   } finally {
     isUploading.value = false
   }

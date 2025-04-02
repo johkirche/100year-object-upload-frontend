@@ -15,7 +15,7 @@
       </Alert>
       <Form @submit="handleSubmit" class="mt-8 space-y-6">
         <div class="space-y-4">
-          <FormField name="username" v-slot="{ field }">
+          <FormField name="username">
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
@@ -31,7 +31,7 @@
             </FormItem>
           </FormField>
 
-          <FormField name="password" v-slot="{ field }">
+          <FormField name="password">
             <FormItem>
               <FormLabel>Password</FormLabel>
               <FormControl>
