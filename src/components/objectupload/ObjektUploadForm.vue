@@ -215,8 +215,8 @@ function startNewUpload() {
     files.value = []
     submittedValues.value = null
 
-    // Reset the form
-    form.reset()
+    // TODO correctly clear the vee validate individual forms
+    
 }
 
 // Function to build the category lookup for display text
