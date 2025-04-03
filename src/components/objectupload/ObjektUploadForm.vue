@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { z } from 'zod'
 import { toTypedSchema } from '@vee-validate/zod'
-import { createItem } from '@directus/sdk'
+import { createItem, readField } from '@directus/sdk'
 import type { ItemsObjekt } from '@/client/types.gen'
 import { UploadIcon } from 'lucide-vue-next'
 
@@ -11,10 +11,9 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription, For
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Checkbox } from '@/components/ui/checkbox'
 
 import { useAuthStore } from '@/stores/auth'
-
-import { categoryOptions, gemeindeOptions } from '@/assets/Options'
 
 import FileManager from '@/components/objectupload/FileManager.vue'
 import HierarchicalMultiSelect from '@/components/objectupload/HierarchicalMultiSelect.vue'
@@ -45,7 +44,7 @@ const formSchema = toTypedSchema(
         art: z.string().optional(),
         format: z.string().optional(),
         einreicherName: z.string({ required_error: 'Einreicher Name ist erforderlich' }).min(2, { message: 'Einreicher Name muss mindestens 2 Zeichen haben' }),
-        einreicherGemeinde: z.string().optional().default('--keine Angabe--'),
+        einreicherGemeinde: z.string().optional().default('keineAngabe'),
         kontaktRueckfrage: z.string().email({ message: 'Gültige E-Mail-Adresse erforderlich' }).optional(),
         objektAusleihenFuerAusstellung: z.boolean().optional(),
         aktuellerStandort: z.string().optional(),
@@ -70,6 +69,11 @@ const uploadSuccess = ref(false)
 const fileManagerRef = ref<InstanceType<typeof FileManager> | null>(null)
 const submittedValues = ref<any>(null)
 
+// Add state for the field options from Directus
+const categoryOptions = ref<any[]>([])
+const gemeindeOptions = ref<any[]>([])
+const categoryLookup = ref<Record<string, string>>({})
+
 // Computed property to control FileManager dropzone visibility
 const disableFileManagerUploadArea = computed(() => isUploading.value || uploadSuccess.value)
 
@@ -89,6 +93,21 @@ function startNewUpload() {
     // TODO: Consider adding form.reset() if using vee-validate's useForm hook directly
 }
 
+// Function to build the category lookup for display text
+function buildCategoryLookup(options: any[]) {
+    const lookup: Record<string, string> = {}
+    
+    function processOption(option: any) {
+        lookup[option.value] = option.text
+        if (option.children && option.children.length > 0) {
+            option.children.forEach(processOption)
+        }
+    }
+    
+    options.forEach(processOption)
+    return lookup
+}
+
 // Submit function
 async function onSubmit(values: any) {
     submittedValues.value = values; // Store submitted values to show summary
@@ -97,19 +116,21 @@ async function onSubmit(values: any) {
     uploadError.value = null        // Reset error state
 
     try {
-        // Upload all files using the FileManager component
-        if (!fileManagerRef.value) {
-            throw new Error('File manager not initialized')
+        let hauptbildId = null;
+        let additionalFileIds: string[] = [];
+        
+        // Upload files if any exist
+        if (files.value.length > 0 && fileManagerRef.value) {
+            const uploadResult = await fileManagerRef.value.uploadAllFiles(values.name);
+            hauptbildId = uploadResult.hauptbildId;
+            additionalFileIds = uploadResult.additionalFileIds;
         }
-
-        const { hauptbildId, additionalFileIds } = await fileManagerRef.value.uploadAllFiles(values.name)
 
         // Create the object data
         const objekt: Partial<ItemsObjekt> = {
             status: 'uploaded',
             name: values.name,
             datierung: values.datierung,
-            abbildung: hauptbildId,
             beschreibung: values.beschreibung,
             kategorie: values.kategorie,
             art: values.art,
@@ -120,8 +141,13 @@ async function onSubmit(values: any) {
             objektAusleihenFuerAusstellung: values.objektAusleihenFuerAusstellung,
             aktuellerStandort: values.aktuellerStandort,
         }
+        
+        // Only add abbildung if a main image was uploaded
+        if (hauptbildId) {
+            objekt.abbildung = hauptbildId;
+        }
 
-        // Add weitereAbbildungen in the required format
+        // Add weitereAbbildungen only if additional files were uploaded
         if (additionalFileIds.length > 0) {
             objekt.weitereAbbildungen = {
                 // @ts-ignore - Type is not correctly defined in the auto-generated types file
@@ -152,6 +178,32 @@ async function onSubmit(values: any) {
         isUploading.value = false // Upload attempt finished (success or fail)
     }
 }
+
+onMounted(async () => {
+    try {
+        // Fetch gemeinde options
+        const gemeindeField = await client.request(
+            readField("objekt", "einreicherGemeinde")
+        );
+        
+        if (gemeindeField.meta?.options?.choices) {
+            gemeindeOptions.value = gemeindeField.meta.options.choices;
+        }
+        
+        // Fetch category options
+        const kategorieField = await client.request(
+            readField("objekt", "kategorie")
+        );
+        
+        if (kategorieField.meta?.options?.choices) {
+            categoryOptions.value = kategorieField.meta.options.choices;
+            categoryLookup.value = buildCategoryLookup(categoryOptions.value);
+        }
+    } catch (error) {
+        console.error('Error fetching field options:', error);
+        uploadError.value = 'Fehler beim Laden der Formulardaten. Bitte laden Sie die Seite neu.';
+    }
+})
 </script>
 
 <template>
@@ -187,13 +239,14 @@ async function onSubmit(values: any) {
                     <div><strong>Name:</strong> {{ submittedValues.name }}</div>
                     <div v-if="submittedValues.datierung"><strong>Datierung:</strong> {{ submittedValues.datierung }}
                     </div>
-                    <div v-if="submittedValues.kategorie && submittedValues.kategorie.length"><strong>Kategorien:</strong> {{
-                        submittedValues.kategorie.join(', ') }}</div>
+                    <div v-if="submittedValues.kategorie && submittedValues.kategorie.length"><strong>Kategorien:</strong> 
+                        {{ submittedValues.kategorie.map((k: string) => categoryLookup[k] || k).join(', ') }}
+                    </div>
                     <div v-if="submittedValues.art"><strong>Art:</strong> {{ submittedValues.art }}</div>
                     <div v-if="submittedValues.format"><strong>Format:</strong> {{ submittedValues.format }}</div>
                     <div><strong>Einreicher:</strong> {{ submittedValues.einreicherName }} <span
-                            v-if="submittedValues.einreicherGemeinde && submittedValues.einreicherGemeinde !== '--keine Angabe--'">({{
-                            submittedValues.einreicherGemeinde }})</span></div>
+                            v-if="submittedValues.einreicherGemeinde && submittedValues.einreicherGemeinde !== 'keineAngabe'">({{
+                            gemeindeOptions.find(g => g.value === submittedValues.einreicherGemeinde)?.text }})</span></div>
                     <div v-if="submittedValues.kontaktRueckfrage"><strong>Kontakt:</strong> {{
                         submittedValues.kontaktRueckfrage }}
                     </div>
@@ -211,7 +264,7 @@ async function onSubmit(values: any) {
 
                 <!-- FileManager shown during upload and after success -->
                 <FileManager v-model="files" :error="uploadError" @error="uploadError = $event" ref="fileManagerRef"
-                    :is-uploading="isUploading" :disable-upload-area="disableFileManagerUploadArea" />
+                    :is-uploading="isUploading" :disable-upload-area="disableFileManagerUploadArea" :files-optional="true" />
 
                 <!-- Error during upload -->
                 <div v-if="uploadError && isUploading"
@@ -230,7 +283,8 @@ async function onSubmit(values: any) {
                                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
                             </path>
                         </svg>
-                        Wird hochgeladen...
+                        <span v-if="files.length">Dateien werden hochgeladen...</span>
+                        <span v-else>Daten werden gespeichert...</span>
                     </Button>
                 </div>
 
@@ -329,7 +383,7 @@ async function onSubmit(values: any) {
             </FormField>
 
             <FileManager v-model="files" :error="uploadError" @error="uploadError = $event" ref="fileManagerRef"
-                :is-uploading="isUploading" :disable-upload-area="disableFileManagerUploadArea" />
+                :is-uploading="isUploading" :disable-upload-area="disableFileManagerUploadArea" :files-optional="true" />
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField name="einreicherName" v-slot="{ field, errorMessage }">
@@ -352,8 +406,8 @@ async function onSubmit(values: any) {
                                     <SelectValue placeholder="Gemeinde auswählen" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem v-for="gemeinde in gemeindeOptions" :key="gemeinde" :value="gemeinde">
-                                        {{ gemeinde }}
+                                    <SelectItem v-for="gemeinde in gemeindeOptions" :key="gemeinde.value" :value="gemeinde.value">
+                                        {{ gemeinde.text }}
                                     </SelectItem>
                                 </SelectContent>
                             </Select>
@@ -387,20 +441,20 @@ async function onSubmit(values: any) {
             </div>
 
             <FormField name="objektAusleihenFuerAusstellung" v-slot="{ field }">
-                <FormItem>
-                    <div class="flex items-center space-x-2">
-                        <input type="checkbox" :checked="field.value" @update:checked="field.onChange"
-                            id="objektAusleihen"
-                            class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary" />
-                        <label for="objektAusleihen"
-                            class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                            Ich würde das Objekt für eine Ausstellung zur Verfügung stellen
-                        </label>
+                <FormItem class="flex flex-row items-start gap-x-3 space-y-0">
+                    <FormControl>
+                        <Checkbox :model-value="field.value" @update:model-value="field.onChange" />
+                    </FormControl>
+                    <div class="space-y-1 leading-none">
+                        <FormLabel>Ich würde das Objekt für eine Ausstellung zur Verfügung stellen</FormLabel>
+                        <FormDescription>
+                            Bei Zustimmung kann das Objekt für zukünftige Ausstellungen angefragt werden
+                        </FormDescription>
                     </div>
                 </FormItem>
             </FormField>
 
-            <Button type="submit" :disabled="isUploading || files.length === 0 || !files.some(f => f.isMain)"
+            <Button type="submit" :disabled="isUploading"
                 class="w-full md:w-auto">
                 <UploadIcon class="w-4 h-4" />
                 Objekt hochladen

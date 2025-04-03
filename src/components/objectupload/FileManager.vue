@@ -26,10 +26,12 @@ interface Props {
   isUploading?: boolean;
   disableUploadArea?: boolean;
   maxFileSize?: number; // in bytes
+  filesOptional?: boolean; // new prop to indicate if files are optional
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  maxFileSize: 10 * 1024 * 1024 // 10MB default
+  maxFileSize: 10 * 1024 * 1024, // 10MB default
+  filesOptional: false // files are required by default
 })
 const emit = defineEmits(['update:modelValue', 'error'])
 
@@ -294,35 +296,50 @@ async function uploadSingleFile(fileItem: FileItem, title: string): Promise<stri
   })
 }
 
-// Upload all files and return their IDs
-async function uploadAllFiles(objectName: string) {
-  if (!props.modelValue.length) {
-    throw new Error('Bitte fügen Sie mindestens eine Datei hinzu')
-  }
-  
-  const mainImage = props.modelValue.find(file => file.isMain)
-  if (!mainImage) {
-    throw new Error('Bitte markieren Sie ein Bild als Hauptbild')
-  }
-  
+// Upload all files in sequence
+async function uploadAllFiles(title: string): Promise<{ hauptbildId: string | null, additionalFileIds: string[] }> {
   try {
+    // Start uploading
     isUploading.value = true
-    emit('error', null)
     
-    let hauptbildId = ''
-    let additionalFileIds: string[] = []
+    // Make a local copy of the files array for safety
+    const filesToUpload = [...props.modelValue]
+    
+    // Early return if no files and files are optional
+    if (filesToUpload.length === 0) {
+      if (props.filesOptional) {
+        return { hauptbildId: null, additionalFileIds: [] }
+      } else {
+        throw new Error('Bitte wählen Sie mindestens ein Bild aus')
+      }
+    }
+    
+    // Check if there's at least one image marked as main (only required if not optional)
+    const mainImageFile = filesToUpload.find(f => f.isMain && f.isImage)
+    if (!mainImageFile && !props.filesOptional && filesToUpload.some(f => f.isImage)) {
+      throw new Error('Bitte wählen Sie ein Hauptbild aus')
+    }
+    
+    let hauptbildId: string | null = null;
+    let additionalFileIds: string[] = [];
     
     // First upload the main image with better error handling
     try {
-      const hauptbildTitle = `Hauptbild: ${objectName}`
-      hauptbildId = await uploadSingleFile(mainImage, hauptbildTitle)
+      // If there's no main image (only possible when files are optional),
+      // skip this step and return null for hauptbildId
+      if (!mainImageFile) {
+        hauptbildId = null;
+      } else {
+        const hauptbildTitle = `Hauptbild: ${title}`;
+        hauptbildId = await uploadSingleFile(mainImageFile, hauptbildTitle);
+      }
     } catch (error: unknown) {
       console.error('Error uploading main image:', error)
-      throw new Error(`Hauptbild konnte nicht hochgeladen werden: ${error instanceof Error ? error.message : String(error)}`)
+      throw new Error(error instanceof Error ? error.message : 'Fehler beim Hochladen des Hauptbildes')
     }
     
     // Then upload any additional files with better error handling
-    const additionalFiles = props.modelValue.filter(file => !file.isMain)
+    const additionalFiles = filesToUpload.filter(file => !file.isMain)
     
     // Use Promise.allSettled to continue even if some files fail
     const uploadPromises = additionalFiles.map(async (file, i) => {
@@ -330,7 +347,7 @@ async function uploadAllFiles(objectName: string) {
         try {
           const index = i + 1
           const fileType = file.isImage ? 'Bild' : 'Datei'
-          const additionalTitle = `Weiteres ${fileType} ${index}: ${objectName}`
+          const additionalTitle = `Weiteres ${fileType} ${index}: ${title}`
           return await uploadSingleFile(file, additionalTitle)
         } catch (error: unknown) {
           console.error(`Error uploading additional file ${i+1}:`, error)
@@ -377,10 +394,18 @@ defineExpose({
 
     <!-- Upload Area (Hide based on new prop) -->
     <div v-if="!props.disableUploadArea">
-      <h2 class="text-lg font-semibold mb-2">Dateien hochladen (mind. 1 Bild erforderlich)</h2>
+      <h2 class="text-lg font-semibold mb-2">
+        Dateien hochladen <span v-if="!props.filesOptional">(mind. 1 Bild erforderlich)</span>
+        <span v-else>(optional)</span>
+      </h2>
       <ImageDropzone @files-added="handleFilesAdded" :disabled="isUploading" :acceptAllFiles="true" />
       <p class="mt-2 text-sm text-gray-500">
-        Bitte markieren Sie ein Bild als Hauptbild durch auswählen der Checkbox.
+        <template v-if="!props.filesOptional">
+          Bitte markieren Sie ein Bild als Hauptbild durch auswählen der Checkbox.
+        </template>
+        <template v-else>
+          Wenn Sie Bilder hochladen, wählen Sie bitte ein Hauptbild durch die Checkbox aus.
+        </template>
         Maximale Dateigröße: {{ formatFileSize(props.maxFileSize) }}
       </p>
     </div>
