@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group/'
+import type { ComponentPublicInstance } from 'vue'
 
 import { useAuthStore } from '@/stores/auth'
 
@@ -45,7 +46,7 @@ const commonSchema = {
     name: z.string({ required_error: 'Name ist erforderlich' })
         .min(2, { message: 'Name muss mindestens 2 Zeichen haben' })
         .max(128, { message: 'Name darf maximal 128 Zeichen haben' }),
-    beschreibung: z.string().max(4096, { message: 'Beschreibung darf maximal 4096 Zeichen haben' }),
+    beschreibung: z.string().min(5, { message: 'Beschreibung muss mindestens 5 Zeichen haben' }).max(4096, { message: 'Beschreibung darf maximal 4096 Zeichen haben' }),
     einreicherName: z.string({ required_error: 'Einreicher Name ist erforderlich' })
         .min(2, { message: 'Einreicher Name muss mindestens 2 Zeichen haben' }),
     einreicherGemeinde: z.string().optional().default('keineAngabe'),
@@ -94,17 +95,19 @@ const wishInfoSchema = toTypedSchema(
     })
 );
 
-const submitterInfoSchema = toTypedSchema(
-    z.object({
-        einreicherName: commonSchema.einreicherName,
-        einreicherGemeinde: commonSchema.einreicherGemeinde,
-        kontaktRueckfrage: commonSchema.kontaktRueckfrage,
-        ...(submissionType.value === 'object' ? {
-            objektAusleihenFuerAusstellung: objectSchema.objektAusleihenFuerAusstellung,
-            aktuellerStandort: objectSchema.aktuellerStandort
-        } : {})
-    })
-);
+const submitterInfoSchema = computed(() => {
+    return toTypedSchema(
+        z.object({
+            einreicherName: commonSchema.einreicherName,
+            einreicherGemeinde: commonSchema.einreicherGemeinde,
+            kontaktRueckfrage: commonSchema.kontaktRueckfrage,
+            ...(submissionType.value === 'object' ? {
+                objektAusleihenFuerAusstellung: objectSchema.objektAusleihenFuerAusstellung,
+                aktuellerStandort: objectSchema.aktuellerStandort
+            } : {})
+        })
+    );
+});
 
 // Reactive validation schema based on current step and submission type
 const formValidationSchema = computed(() => {
@@ -113,7 +116,7 @@ const formValidationSchema = computed(() => {
     } else if (currentStep.value === 'object-info') {
         return submissionType.value === 'object' ? objectInfoSchema : wishInfoSchema;
     } else if (currentStep.value === 'submitter-info') {
-        return submitterInfoSchema;
+        return submitterInfoSchema.value;
     }
     return submissionType.value === 'object' ? fullObjectSchema : wishSchema;
 });
@@ -157,6 +160,12 @@ const uploadSuccess = ref(false)
 const fileManagerRef = ref<InstanceType<typeof FileManager> | null>(null)
 const submittedValues = ref<any>(null)
 
+// From Refs
+type FormRef = ComponentPublicInstance & { resetForm: (values?: any) => void }
+const typeSelectionFormRef = ref<FormRef | null>(null)
+const objectInfoFormRef = ref<FormRef | null>(null)
+const submitterInfoFormRef = ref<FormRef | null>(null)
+
 // Add state for the field options from Directus
 const categoryOptions = ref<any[]>([])
 const gemeindeOptions = ref<any[]>([])
@@ -181,6 +190,42 @@ function prevStep() {
     } else if (currentStep.value === 'submitter-info') {
         currentStep.value = 'object-info';
     }
+}
+
+function resetAllForms() {
+  // Reset all vee-validate forms
+  if (typeSelectionFormRef.value) {
+    typeSelectionFormRef.value.resetForm({
+      values: {
+        submissionType: null
+      }
+    })
+  }
+  
+  if (objectInfoFormRef.value) {
+    objectInfoFormRef.value.resetForm({
+      values: {
+        name: null,
+        beschreibung: null,
+        datierung: null,
+        kategorie: null,
+        art: null,
+        format: null
+      }
+    })
+  }
+  
+  if (submitterInfoFormRef.value) {
+    submitterInfoFormRef.value.resetForm({
+      values: {
+        einreicherName: null,
+        einreicherGemeinde: 'keineAngabe',
+        kontaktRueckfrage: null,
+        objektAusleihenFuerAusstellung: false,
+        aktuellerStandort: null
+      }
+    })
+  }
 }
 
 // Function to fully reset state for a new upload
@@ -215,8 +260,8 @@ function startNewUpload() {
     files.value = []
     submittedValues.value = null
 
-    // TODO correctly clear the vee validate individual forms
-    
+    // Reset all vee-validate forms
+    resetAllForms()
 }
 
 // Function to build the category lookup for display text
@@ -236,6 +281,8 @@ function buildCategoryLookup(options: any[]) {
 
 // Submit function for each step
 function onStepSubmit(values: any) {
+    console.log(values);
+    
     // Update form data with values from this step
     Object.assign(formData, values);
     
@@ -256,11 +303,6 @@ async function onSubmit(values: any) {
     isUploading.value = true        // Show uploading state
     uploadSuccess.value = false     // Reset success state
     uploadError.value = null        // Reset error state
-
-    console.log('onSubmit', values);
-    console.log('files', files.value);
-    console.log('submissionType', submissionType.value);
-    console.log('fileManagerRef', fileManagerRef.value);
 
     try {
         let hauptbildId = null;
@@ -287,6 +329,8 @@ async function onSubmit(values: any) {
         
         // Add object-specific fields only if this is an object submission
         if (submissionType.value === 'object') {
+            console.log(values);
+            
             objekt.datierung = values.datierung;
             objekt.kategorie = values.kategorie;
             objekt.art = values.art;
@@ -468,7 +512,7 @@ onMounted(async () => {
             </div>
 
             <!-- Step 1: Type Selection -->
-            <Form v-show="currentStep === 'type-selection'" @submit="onStepSubmit" :validation-schema="formValidationSchema" class="space-y-8">
+            <Form v-show="currentStep === 'type-selection'" @submit="onStepSubmit" :validation-schema="formValidationSchema" ref="typeSelectionFormRef" class="space-y-8">
                 <Card>
                     <CardHeader>
                         <CardTitle>Was möchten Sie einreichen?</CardTitle>
@@ -539,7 +583,7 @@ onMounted(async () => {
             </Form>
 
             <!-- Step 2: Object Information -->
-            <Form v-show="currentStep === 'object-info'" @submit="onStepSubmit" :validation-schema="formValidationSchema" class="space-y-8">
+            <Form v-show="currentStep === 'object-info'" @submit="onStepSubmit" :validation-schema="formValidationSchema" ref="objectInfoFormRef" class="space-y-8">
                 <Card>
                     <CardHeader>
                         <CardTitle>
@@ -662,7 +706,7 @@ onMounted(async () => {
             </Form>
 
             <!-- Step 3: Submitter Information -->
-            <Form v-show="currentStep === 'submitter-info'" @submit="onStepSubmit" :validation-schema="formValidationSchema" class="space-y-8">
+            <Form v-show="currentStep === 'submitter-info'" @submit="onStepSubmit" :validation-schema="formValidationSchema" ref="submitterInfoFormRef" class="space-y-8">
                 <Card>
                     <CardHeader>
                         <CardTitle>Ihre Kontaktinformationen</CardTitle>
@@ -730,10 +774,10 @@ onMounted(async () => {
                         </div>
 
                         <div v-if="submissionType === 'object'">
-                            <FormField name="objektAusleihenFuerAusstellung" v-slot="{ value, handleChange }">
+                            <FormField name="objektAusleihenFuerAusstellung" v-slot="{ field, errorMessage }">
                                 <FormItem class="flex flex-row items-start gap-x-3 space-y-0">
                                     <FormControl>
-                                        <Checkbox :model-value="value" @update:model-value="handleChange" />
+                                        <Checkbox :model-value="field.value" @update:model-value="field.onChange" />
                                     </FormControl>
                                     <div class="space-y-1 leading-none">
                                         <FormLabel>Ich würde das Objekt für eine Ausstellung zur Verfügung stellen</FormLabel>
@@ -741,6 +785,7 @@ onMounted(async () => {
                                             Bei Zustimmung kann das Objekt für zukünftige Ausstellungen angefragt werden
                                         </FormDescription>
                                     </div>
+                                    <FormMessage>{{ errorMessage }}</FormMessage>
                                 </FormItem>
                             </FormField>
                         </div>
