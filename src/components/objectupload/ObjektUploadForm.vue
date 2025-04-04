@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, reactive, watch } from 'vue'
+import { ref, computed, onMounted, reactive } from 'vue'
 import { z } from 'zod'
 import { toTypedSchema } from '@vee-validate/zod'
 import { createItem, readField } from '@directus/sdk'
@@ -129,7 +129,7 @@ const formData = reactive({
     einreicherName: '',
     einreicherGemeinde: 'keineAngabe',
     kontaktRueckfrage: '',
-    
+
     // Object-specific fields
     datierung: '',
     kategorie: [] as string[],
@@ -137,7 +137,7 @@ const formData = reactive({
     format: '',
     objektAusleihenFuerAusstellung: false,
     aktuellerStandort: '',
-    
+
     // Selection field
     submissionType: null as SubmissionType
 });
@@ -201,7 +201,7 @@ function resetAllForms() {
       }
     })
   }
-  
+
   if (objectInfoFormRef.value) {
     objectInfoFormRef.value.resetForm({
       values: {
@@ -214,7 +214,7 @@ function resetAllForms() {
       }
     })
   }
-  
+
   if (submitterInfoFormRef.value) {
     submitterInfoFormRef.value.resetForm({
       values: {
@@ -236,7 +236,7 @@ function startNewUpload() {
     currentStep.value = 'type-selection'
     submissionType.value = null
     formData.submissionType = null
-    
+
     // Reset form data
     Object.keys(formData).forEach(key => {
         if (key === 'kategorie') {
@@ -250,7 +250,7 @@ function startNewUpload() {
             formData[key] = '';
         }
     });
-    
+
     // Clean up any object URLs to prevent memory leaks
     files.value.forEach(file => {
         if (file.preview) {
@@ -267,14 +267,14 @@ function startNewUpload() {
 // Function to build the category lookup for display text
 function buildCategoryLookup(options: any[]) {
     const lookup: Record<string, string> = {}
-    
+
     function processOption(option: any) {
         lookup[option.value] = option.text
         if (option.children && option.children.length > 0) {
             option.children.forEach(processOption)
         }
     }
-    
+
     options.forEach(processOption)
     return lookup
 }
@@ -282,10 +282,10 @@ function buildCategoryLookup(options: any[]) {
 // Submit function for each step
 function onStepSubmit(values: any) {
     console.log(values);
-    
+
     // Update form data with values from this step
     Object.assign(formData, values);
-    
+
     if (currentStep.value === 'type-selection') {
         submissionType.value = values.submissionType;
         nextStep();
@@ -307,7 +307,7 @@ async function onSubmit(values: any) {
     try {
         let hauptbildId = null;
         let additionalFileIds: string[] = [];
-        
+
         // Upload files if any exist and this is an object submission (not a wish)
         if (submissionType.value === 'object' && files.value.length > 0 && fileManagerRef.value) {
             const uploadResult = await fileManagerRef.value.uploadAllFiles(values.name);
@@ -326,18 +326,18 @@ async function onSubmit(values: any) {
             // Add a field to track if this is a wish or actual object
             type: submissionType.value
         }
-        
+
         // Add object-specific fields only if this is an object submission
         if (submissionType.value === 'object') {
             console.log(values);
-            
+
             objekt.datierung = values.datierung;
             objekt.kategorie = values.kategorie;
             objekt.art = values.art;
             objekt.format = values.format;
             objekt.objektAusleihenFuerAusstellung = values.objektAusleihenFuerAusstellung;
             objekt.aktuellerStandort = values.aktuellerStandort;
-            
+
             // Only add abbildung if a main image was uploaded
             if (hauptbildId) {
                 objekt.abbildung = hauptbildId;
@@ -382,16 +382,16 @@ onMounted(async () => {
         const gemeindeField = await client.request(
             readField("objekt", "einreicherGemeinde")
         );
-        
+
         if (gemeindeField.meta?.options?.choices) {
             gemeindeOptions.value = gemeindeField.meta.options.choices;
         }
-        
+
         // Fetch category options
         const kategorieField = await client.request(
             readField("objekt", "kategorie")
         );
-        
+
         if (kategorieField.meta?.options?.choices) {
             categoryOptions.value = kategorieField.meta.options.choices;
             categoryLookup.value = buildCategoryLookup(categoryOptions.value);
@@ -436,7 +436,7 @@ onMounted(async () => {
                     <div><strong>Name:</strong> {{ submittedValues.name }}</div>
                     <div v-if="submissionType === 'object' && submittedValues.datierung"><strong>Datierung:</strong> {{ submittedValues.datierung }}</div>
                     <div v-if="submissionType === 'object' && submittedValues.kategorie && submittedValues.kategorie.length">
-                        <strong>Kategorien:</strong> 
+                        <strong>Kategorien:</strong>
                         {{ submittedValues.kategorie.map((k: string) => categoryLookup[k] || k).join(', ') }}
                     </div>
                     <div v-if="submissionType === 'object' && submittedValues.art"><strong>Art:</strong> {{ submittedValues.art }}</div>
@@ -506,7 +506,7 @@ onMounted(async () => {
                     </div>
                 </div>
                 <div class="w-full bg-gray-200 rounded-full h-2.5 mt-2">
-                    <div class="bg-primary h-2.5 rounded-full" 
+                    <div class="bg-primary h-2.5 rounded-full"
                         :style="{width: currentStep === 'object-info' ? '50%' : currentStep === 'submitter-info' ? '100%' : '0%'}"></div>
                 </div>
             </div>
@@ -524,12 +524,12 @@ onMounted(async () => {
                         <FormField name="submissionType" v-slot="{ field, errorMessage }">
                             <FormItem class="space-y-4">
                                 <FormControl>
-                                    <RadioGroup 
-                                        :model-value="field.value" 
+                                    <RadioGroup
+                                        :model-value="field.value"
                                         @update:model-value="field.onChange"
                                         class="grid grid-cols-1 md:grid-cols-2 gap-4"
                                     >
-                                        <div 
+                                        <div
                                             class="flex flex-col p-6 border rounded-md cursor-pointer hover:bg-gray-50"
                                             :class="{'border-primary border-2 shadow-sm': field.value === 'object', 'border-input': field.value !== 'object'}"
                                             @click="field.onChange('object')"
@@ -547,8 +547,8 @@ onMounted(async () => {
                                                 </FormDescription>
                                             </div>
                                         </div>
-                                        
-                                        <div 
+
+                                        <div
                                             class="flex flex-col p-6 border rounded-md cursor-pointer hover:bg-gray-50"
                                             :class="{'border-primary border-2 shadow-sm': field.value === 'wish', 'border-input': field.value !== 'wish'}"
                                             @click="field.onChange('wish')"
@@ -570,7 +570,7 @@ onMounted(async () => {
                                 </FormControl>
                                 <FormMessage>{{ errorMessage }}</FormMessage>
                             </FormItem>
-                        
+
                             <CardFooter class="px-0 pb-0 pt-4 justify-end">
                                 <Button type="submit" :disabled="!field.value">
                                     Weiter
@@ -684,7 +684,7 @@ onMounted(async () => {
                                 </FormItem>
                             </FormField>
                         </div>
-                        
+
                         <!-- File Upload section only for object submissions -->
                         <div v-if="submissionType === 'object'" class="pt-4">
                             <h3 class="text-lg font-medium mb-2">Bilder oder Dokumente des Objekts</h3>
