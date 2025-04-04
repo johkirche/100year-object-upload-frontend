@@ -30,17 +30,15 @@ export type Files = {
      */
     folder?: string | Folders | null;
     /**
-     * When the file was created.
-     */
-    created_on?: Date;
-    /**
      * Who uploaded the file.
      */
     uploaded_by?: string | Users;
     /**
-     * When the file was last uploaded/replaced.
+     * When the file was created.
      */
-    uploaded_on?: Date;
+    created_on?: Date;
+    modified_by?: string | Users | null;
+    modified_on?: string;
     /**
      * Character set of the file.
      */
@@ -83,6 +81,14 @@ export type Files = {
     metadata?: {
         [key: string]: unknown;
     } | null;
+    focal_point_x?: number | null;
+    focal_point_y?: number | null;
+    tus_id?: string | null;
+    tus_data?: unknown;
+    /**
+     * When the file was last uploaded/replaced.
+     */
+    uploaded_on?: Date;
 };
 
 export type Folders = {
@@ -141,73 +147,9 @@ export type Users = {
      */
     id?: string;
     /**
-     * First name of the user.
-     */
-    first_name?: string;
-    /**
-     * Last name of the user.
-     */
-    last_name?: string;
-    /**
-     * Unique email address for the user.
-     */
-    email?: string;
-    /**
-     * Password of the user.
-     */
-    password?: string;
-    /**
-     * The user's location.
-     */
-    location?: string | null;
-    /**
-     * The user's title.
-     */
-    title?: string | null;
-    /**
-     * The user's description.
-     */
-    description?: string | null;
-    /**
-     * The user's tags.
-     */
-    tags?: Array<string> | null;
-    /**
-     * The user's avatar.
-     */
-    avatar?: string | Files | null;
-    /**
-     * The user's language used in Directus.
-     */
-    language?: string;
-    /**
-     * What theme the user is using.
-     */
-    theme?: 'light' | 'dark' | 'auto';
-    /**
-     * The 2FA secret string that's used to generate one time passwords.
-     */
-    tfa_secret?: string | null;
-    /**
-     * Status of the user.
-     */
-    status?: 'active' | 'invited' | 'draft' | 'suspended' | 'deleted';
-    /**
      * Unique identifier of the role of this user.
      */
     role?: string | Roles;
-    /**
-     * Static token for the user.
-     */
-    token?: string | null;
-    /**
-     * When this user used the API last.
-     */
-    last_access?: Date | null;
-    /**
-     * Last page that the user was on.
-     */
-    last_page?: string | null;
 };
 
 export type Query = {
@@ -257,19 +199,53 @@ export type XMetadata = {
     filter_count?: number;
 };
 
+export type Fields = {
+    id?: number;
+    /**
+     * Unique name of the collection this field is in.
+     */
+    collection?: string;
+    /**
+     * Unique name of the field. Field name is unique within the collection.
+     */
+    field?: string;
+    special?: Array<string> | null;
+    interface?: string | null;
+    options?: unknown;
+    display?: string | null;
+    display_options?: unknown;
+    readonly?: boolean;
+    hidden?: boolean;
+    sort?: number | null;
+    width?: string | null;
+    translations?: unknown;
+    note?: string | null;
+    conditions?: unknown;
+    required?: boolean | null;
+    group?: number | Fields | null;
+    validation?: unknown;
+    validation_message?: string | null;
+};
+
+export type ItemsBewertungKleinerKreis = {
+    id?: number;
+    bezeichner?: string | null;
+    rangfolge?: number | null;
+};
+
 export type ItemsObjekt = {
     id?: number;
     status?: string;
-    user_created?: string | null;
+    user_created?: string | Users | null;
     date_created?: string | null;
-    user_updated?: string | null;
+    user_updated?: string | Users | null;
     date_updated?: string | null;
     name?: string | null;
     datierung?: string | null;
     /**
      * Foto / Abbildung, auf dem das Objekt gezeigt wird
      */
-    abbildung?: string | null;
+    abbildung?: string | Files | null;
     beschreibung?: string | null;
     art?: string | null;
     format?: string | null;
@@ -284,22 +260,17 @@ export type ItemsObjekt = {
     kategorie?: unknown;
     aktuellerStandort?: string | null;
     anmerkung?: string | null;
+    type?: string | null;
     /**
      * Weitere Abbildungen oder ergänzende Dateien
      */
     weitereAbbildungen?: Array<number | ItemsObjektFiles> | null;
 };
 
-export type ItemsBewertungKleinerKreis = {
-    id?: number;
-    bezeichner?: string | null;
-    rangfolge?: number | null;
-};
-
 export type ItemsObjektFiles = {
     id?: number;
     objekt_id?: number | ItemsObjekt | null;
-    directus_files_id?: string | null;
+    directus_files_id?: string | Files | null;
 };
 
 /**
@@ -358,7 +329,7 @@ export type Filter = {
 /**
  * Control what fields are being returned in the object.
  */
-export type Fields = Array<string>;
+export type Fields2 = Array<string>;
 
 /**
  * Saves the API response to a file. Accepts one of "csv", "json", "xml", "yaml".
@@ -886,6 +857,608 @@ export type RandomResponses = {
 
 export type RandomResponse = RandomResponses[keyof RandomResponses];
 
+export type GetFilesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Control what fields are being returned in the object.
+         */
+        fields?: Array<string>;
+        /**
+         * A limit on the number of objects that are returned.
+         */
+        limit?: number;
+        /**
+         * How many items to skip when fetching data.
+         */
+        offset?: number;
+        /**
+         * How to sort the returned items. `sort` is a CSV of fields used to sort the fetched items. Sorting defaults to ascending (ASC) order but a minus sign (` - `) can be used to reverse this to descending (DESC) order. Fields are prioritized by their order in the CSV. You can also use a ` ? ` to sort randomly.
+         *
+         */
+        sort?: Array<string>;
+        /**
+         * Select items in collection by given conditions.
+         */
+        filter?: {
+            [key: string]: unknown;
+        };
+        /**
+         * Filter by items that contain the given search query in one of their fields.
+         */
+        search?: string;
+        /**
+         * What metadata to return in the response.
+         */
+        meta?: string;
+    };
+    url: '/files';
+};
+
+export type GetFilesErrors = {
+    /**
+     * Error: Unauthorized request
+     */
+    401: {
+        error?: {
+            code?: bigint;
+            message?: string;
+        };
+    };
+};
+
+export type GetFilesError = GetFilesErrors[keyof GetFilesErrors];
+
+export type GetFilesResponses = {
+    /**
+     * Successful request
+     */
+    200: {
+        data?: Array<Files>;
+        meta?: XMetadata;
+    };
+};
+
+export type GetFilesResponse = GetFilesResponses[keyof GetFilesResponses];
+
+export type CreateFileData = {
+    body?: {
+        data?: string;
+    };
+    path?: never;
+    query?: never;
+    url: '/files';
+};
+
+export type CreateFileErrors = {
+    /**
+     * Error: Unauthorized request
+     */
+    401: {
+        error?: {
+            code?: bigint;
+            message?: string;
+        };
+    };
+};
+
+export type CreateFileError = CreateFileErrors[keyof CreateFileErrors];
+
+export type CreateFileResponses = {
+    /**
+     * Successful request
+     */
+    200: {
+        data?: Files;
+    };
+};
+
+export type CreateFileResponse = CreateFileResponses[keyof CreateFileResponses];
+
+export type GetFileData = {
+    body?: never;
+    path: {
+        /**
+         * Unique identifier for the object.
+         */
+        id: string;
+    };
+    query?: {
+        /**
+         * Control what fields are being returned in the object.
+         */
+        fields?: Array<string>;
+        /**
+         * What metadata to return in the response.
+         */
+        meta?: string;
+    };
+    url: '/files/{id}';
+};
+
+export type GetFileErrors = {
+    /**
+     * Error: Unauthorized request
+     */
+    401: {
+        error?: {
+            code?: bigint;
+            message?: string;
+        };
+    };
+};
+
+export type GetFileError = GetFileErrors[keyof GetFileErrors];
+
+export type GetFileResponses = {
+    /**
+     * Successful request
+     */
+    200: {
+        data?: Files;
+    };
+};
+
+export type GetFileResponse = GetFileResponses[keyof GetFileResponses];
+
+export type GetFieldsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * A limit on the number of objects that are returned.
+         */
+        limit?: number;
+        /**
+         * How to sort the returned items. `sort` is a CSV of fields used to sort the fetched items. Sorting defaults to ascending (ASC) order but a minus sign (` - `) can be used to reverse this to descending (DESC) order. Fields are prioritized by their order in the CSV. You can also use a ` ? ` to sort randomly.
+         *
+         */
+        sort?: Array<string>;
+    };
+    url: '/fields';
+};
+
+export type GetFieldsErrors = {
+    /**
+     * Error: Unauthorized request
+     */
+    401: {
+        error?: {
+            code?: bigint;
+            message?: string;
+        };
+    };
+    /**
+     * Error: Not found.
+     */
+    404: {
+        error?: {
+            code?: bigint;
+            message?: string;
+        };
+    };
+};
+
+export type GetFieldsError = GetFieldsErrors[keyof GetFieldsErrors];
+
+export type GetFieldsResponses = {
+    /**
+     * Successful request
+     */
+    200: {
+        data?: Array<Fields>;
+    };
+};
+
+export type GetFieldsResponse = GetFieldsResponses[keyof GetFieldsResponses];
+
+export type GetCollectionFieldsData = {
+    body?: never;
+    path: {
+        /**
+         * Unique identifier of the collection the item resides in.
+         */
+        collection: string;
+    };
+    query?: {
+        /**
+         * How to sort the returned items. `sort` is a CSV of fields used to sort the fetched items. Sorting defaults to ascending (ASC) order but a minus sign (` - `) can be used to reverse this to descending (DESC) order. Fields are prioritized by their order in the CSV. You can also use a ` ? ` to sort randomly.
+         *
+         */
+        sort?: Array<string>;
+    };
+    url: '/fields/{collection}';
+};
+
+export type GetCollectionFieldsErrors = {
+    /**
+     * Error: Unauthorized request
+     */
+    401: {
+        error?: {
+            code?: bigint;
+            message?: string;
+        };
+    };
+    /**
+     * Error: Not found.
+     */
+    404: {
+        error?: {
+            code?: bigint;
+            message?: string;
+        };
+    };
+};
+
+export type GetCollectionFieldsError = GetCollectionFieldsErrors[keyof GetCollectionFieldsErrors];
+
+export type GetCollectionFieldsResponses = {
+    /**
+     * Successful request
+     */
+    200: {
+        data?: Array<Fields>;
+    };
+};
+
+export type GetCollectionFieldsResponse = GetCollectionFieldsResponses[keyof GetCollectionFieldsResponses];
+
+export type GetCollectionFieldData = {
+    body?: never;
+    path: {
+        /**
+         * Unique identifier of the collection the item resides in.
+         */
+        collection: string;
+        /**
+         * Unique identifier of the field.
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/fields/{collection}/{id}';
+};
+
+export type GetCollectionFieldErrors = {
+    /**
+     * Error: Unauthorized request
+     */
+    401: {
+        error?: {
+            code?: bigint;
+            message?: string;
+        };
+    };
+    /**
+     * Error: Not found.
+     */
+    404: {
+        error?: {
+            code?: bigint;
+            message?: string;
+        };
+    };
+};
+
+export type GetCollectionFieldError = GetCollectionFieldErrors[keyof GetCollectionFieldErrors];
+
+export type GetCollectionFieldResponses = {
+    /**
+     * Successful request
+     */
+    200: {
+        data?: Fields;
+    };
+};
+
+export type GetCollectionFieldResponse = GetCollectionFieldResponses[keyof GetCollectionFieldResponses];
+
+export type GetUsersData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Control what fields are being returned in the object.
+         */
+        fields?: Array<string>;
+        /**
+         * A limit on the number of objects that are returned.
+         */
+        limit?: number;
+        /**
+         * How many items to skip when fetching data.
+         */
+        offset?: number;
+        /**
+         * What metadata to return in the response.
+         */
+        meta?: string;
+        /**
+         * How to sort the returned items. `sort` is a CSV of fields used to sort the fetched items. Sorting defaults to ascending (ASC) order but a minus sign (` - `) can be used to reverse this to descending (DESC) order. Fields are prioritized by their order in the CSV. You can also use a ` ? ` to sort randomly.
+         *
+         */
+        sort?: Array<string>;
+        /**
+         * Select items in collection by given conditions.
+         */
+        filter?: {
+            [key: string]: unknown;
+        };
+        /**
+         * Filter by items that contain the given search query in one of their fields.
+         */
+        search?: string;
+    };
+    url: '/users';
+};
+
+export type GetUsersErrors = {
+    /**
+     * Error: Unauthorized request
+     */
+    401: {
+        error?: {
+            code?: bigint;
+            message?: string;
+        };
+    };
+    /**
+     * Error: Not found.
+     */
+    404: {
+        error?: {
+            code?: bigint;
+            message?: string;
+        };
+    };
+};
+
+export type GetUsersError = GetUsersErrors[keyof GetUsersErrors];
+
+export type GetUsersResponses = {
+    /**
+     * Successful request
+     */
+    200: {
+        data?: Array<Users>;
+        meta?: XMetadata;
+    };
+};
+
+export type GetUsersResponse = GetUsersResponses[keyof GetUsersResponses];
+
+export type GetUserData = {
+    body?: never;
+    path: {
+        /**
+         * Unique identifier for the object.
+         */
+        id: string;
+    };
+    query?: {
+        /**
+         * Control what fields are being returned in the object.
+         */
+        fields?: Array<string>;
+        /**
+         * What metadata to return in the response.
+         */
+        meta?: string;
+    };
+    url: '/users/{id}';
+};
+
+export type GetUserErrors = {
+    /**
+     * Error: Unauthorized request
+     */
+    401: {
+        error?: {
+            code?: bigint;
+            message?: string;
+        };
+    };
+    /**
+     * Error: Not found.
+     */
+    404: {
+        error?: {
+            code?: bigint;
+            message?: string;
+        };
+    };
+};
+
+export type GetUserError = GetUserErrors[keyof GetUserErrors];
+
+export type GetUserResponses = {
+    /**
+     * Successful request
+     */
+    200: {
+        data?: Users;
+    };
+};
+
+export type GetUserResponse = GetUserResponses[keyof GetUserResponses];
+
+export type GetMeData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Control what fields are being returned in the object.
+         */
+        fields?: Array<string>;
+        /**
+         * What metadata to return in the response.
+         */
+        meta?: string;
+    };
+    url: '/users/me';
+};
+
+export type GetMeErrors = {
+    /**
+     * Error: Unauthorized request
+     */
+    401: {
+        error?: {
+            code?: bigint;
+            message?: string;
+        };
+    };
+    /**
+     * Error: Not found.
+     */
+    404: {
+        error?: {
+            code?: bigint;
+            message?: string;
+        };
+    };
+};
+
+export type GetMeError = GetMeErrors[keyof GetMeErrors];
+
+export type GetMeResponses = {
+    /**
+     * Successful request
+     */
+    200: {
+        data?: Users;
+    };
+};
+
+export type GetMeResponse = GetMeResponses[keyof GetMeResponses];
+
+export type ReadItemsBewertungKleinerKreisData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Control what fields are being returned in the object.
+         */
+        fields?: Array<string>;
+        /**
+         * A limit on the number of objects that are returned.
+         */
+        limit?: number;
+        /**
+         * What metadata to return in the response.
+         */
+        meta?: string;
+        /**
+         * How many items to skip when fetching data.
+         */
+        offset?: number;
+        /**
+         * How to sort the returned items. `sort` is a CSV of fields used to sort the fetched items. Sorting defaults to ascending (ASC) order but a minus sign (` - `) can be used to reverse this to descending (DESC) order. Fields are prioritized by their order in the CSV. You can also use a ` ? ` to sort randomly.
+         *
+         */
+        sort?: Array<string>;
+        /**
+         * Select items in collection by given conditions.
+         */
+        filter?: {
+            [key: string]: unknown;
+        };
+        /**
+         * Filter by items that contain the given search query in one of their fields.
+         */
+        search?: string;
+    };
+    url: '/items/bewertungKleinerKreis';
+};
+
+export type ReadItemsBewertungKleinerKreisErrors = {
+    /**
+     * Error: Unauthorized request
+     */
+    401: {
+        error?: {
+            code?: bigint;
+            message?: string;
+        };
+    };
+};
+
+export type ReadItemsBewertungKleinerKreisError = ReadItemsBewertungKleinerKreisErrors[keyof ReadItemsBewertungKleinerKreisErrors];
+
+export type ReadItemsBewertungKleinerKreisResponses = {
+    /**
+     * Successful request
+     */
+    200: {
+        data?: Array<ItemsBewertungKleinerKreis>;
+        meta?: XMetadata;
+    };
+};
+
+export type ReadItemsBewertungKleinerKreisResponse = ReadItemsBewertungKleinerKreisResponses[keyof ReadItemsBewertungKleinerKreisResponses];
+
+export type ReadSingleItemsBewertungKleinerKreisData = {
+    body?: never;
+    path: {
+        /**
+         * Index of the item.
+         */
+        id: number | string;
+    };
+    query?: {
+        /**
+         * Control what fields are being returned in the object.
+         */
+        fields?: Array<string>;
+        /**
+         * What metadata to return in the response.
+         */
+        meta?: string;
+        /**
+         * Retrieve an item's state from a specific Content Version. The value corresponds to the "key" of the Content Version.
+         *
+         */
+        version?: string;
+    };
+    url: '/items/bewertungKleinerKreis/{id}';
+};
+
+export type ReadSingleItemsBewertungKleinerKreisErrors = {
+    /**
+     * Error: Unauthorized request
+     */
+    401: {
+        error?: {
+            code?: bigint;
+            message?: string;
+        };
+    };
+    /**
+     * Error: Not found.
+     */
+    404: {
+        error?: {
+            code?: bigint;
+            message?: string;
+        };
+    };
+};
+
+export type ReadSingleItemsBewertungKleinerKreisError = ReadSingleItemsBewertungKleinerKreisErrors[keyof ReadSingleItemsBewertungKleinerKreisErrors];
+
+export type ReadSingleItemsBewertungKleinerKreisResponses = {
+    /**
+     * Successful request
+     */
+    200: {
+        data?: ItemsBewertungKleinerKreis;
+    };
+};
+
+export type ReadSingleItemsBewertungKleinerKreisResponse = ReadSingleItemsBewertungKleinerKreisResponses[keyof ReadSingleItemsBewertungKleinerKreisResponses];
+
 export type DeleteItemsObjektData = {
     body?: never;
     path?: never;
@@ -1222,131 +1795,6 @@ export type UpdateSingleItemsObjektResponses = {
 };
 
 export type UpdateSingleItemsObjektResponse = UpdateSingleItemsObjektResponses[keyof UpdateSingleItemsObjektResponses];
-
-export type ReadItemsBewertungKleinerKreisData = {
-    body?: never;
-    path?: never;
-    query?: {
-        /**
-         * Control what fields are being returned in the object.
-         */
-        fields?: Array<string>;
-        /**
-         * A limit on the number of objects that are returned.
-         */
-        limit?: number;
-        /**
-         * What metadata to return in the response.
-         */
-        meta?: string;
-        /**
-         * How many items to skip when fetching data.
-         */
-        offset?: number;
-        /**
-         * How to sort the returned items. `sort` is a CSV of fields used to sort the fetched items. Sorting defaults to ascending (ASC) order but a minus sign (` - `) can be used to reverse this to descending (DESC) order. Fields are prioritized by their order in the CSV. You can also use a ` ? ` to sort randomly.
-         *
-         */
-        sort?: Array<string>;
-        /**
-         * Select items in collection by given conditions.
-         */
-        filter?: {
-            [key: string]: unknown;
-        };
-        /**
-         * Filter by items that contain the given search query in one of their fields.
-         */
-        search?: string;
-    };
-    url: '/items/bewertungKleinerKreis';
-};
-
-export type ReadItemsBewertungKleinerKreisErrors = {
-    /**
-     * Error: Unauthorized request
-     */
-    401: {
-        error?: {
-            code?: bigint;
-            message?: string;
-        };
-    };
-};
-
-export type ReadItemsBewertungKleinerKreisError = ReadItemsBewertungKleinerKreisErrors[keyof ReadItemsBewertungKleinerKreisErrors];
-
-export type ReadItemsBewertungKleinerKreisResponses = {
-    /**
-     * Successful request
-     */
-    200: {
-        data?: Array<ItemsBewertungKleinerKreis>;
-        meta?: XMetadata;
-    };
-};
-
-export type ReadItemsBewertungKleinerKreisResponse = ReadItemsBewertungKleinerKreisResponses[keyof ReadItemsBewertungKleinerKreisResponses];
-
-export type ReadSingleItemsBewertungKleinerKreisData = {
-    body?: never;
-    path: {
-        /**
-         * Index of the item.
-         */
-        id: number | string;
-    };
-    query?: {
-        /**
-         * Control what fields are being returned in the object.
-         */
-        fields?: Array<string>;
-        /**
-         * What metadata to return in the response.
-         */
-        meta?: string;
-        /**
-         * Retrieve an item's state from a specific Content Version. The value corresponds to the "key" of the Content Version.
-         *
-         */
-        version?: string;
-    };
-    url: '/items/bewertungKleinerKreis/{id}';
-};
-
-export type ReadSingleItemsBewertungKleinerKreisErrors = {
-    /**
-     * Error: Unauthorized request
-     */
-    401: {
-        error?: {
-            code?: bigint;
-            message?: string;
-        };
-    };
-    /**
-     * Error: Not found.
-     */
-    404: {
-        error?: {
-            code?: bigint;
-            message?: string;
-        };
-    };
-};
-
-export type ReadSingleItemsBewertungKleinerKreisError = ReadSingleItemsBewertungKleinerKreisErrors[keyof ReadSingleItemsBewertungKleinerKreisErrors];
-
-export type ReadSingleItemsBewertungKleinerKreisResponses = {
-    /**
-     * Successful request
-     */
-    200: {
-        data?: ItemsBewertungKleinerKreis;
-    };
-};
-
-export type ReadSingleItemsBewertungKleinerKreisResponse = ReadSingleItemsBewertungKleinerKreisResponses[keyof ReadSingleItemsBewertungKleinerKreisResponses];
 
 export type DeleteItemsObjektFilesData = {
     body?: never;

@@ -794,6 +794,579 @@
                 ]
             }
         },
+        "/files": {
+            "get": {
+                "summary": "List Files",
+                "description": "List the files.",
+                "tags": [
+                    "Files"
+                ],
+                "operationId": "getFiles",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/Fields"
+                    },
+                    {
+                        "$ref": "#/components/parameters/Limit"
+                    },
+                    {
+                        "$ref": "#/components/parameters/Offset"
+                    },
+                    {
+                        "$ref": "#/components/parameters/Sort"
+                    },
+                    {
+                        "$ref": "#/components/parameters/Filter"
+                    },
+                    {
+                        "$ref": "#/components/parameters/Search"
+                    },
+                    {
+                        "$ref": "#/components/parameters/Meta"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Files"
+                                            }
+                                        },
+                                        "meta": {
+                                            "$ref": "#/components/schemas/x-metadata"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError"
+                    }
+                }
+            },
+            "post": {
+                "summary": "Create a File",
+                "description": "Create a new file",
+                "tags": [
+                    "Files"
+                ],
+                "operationId": "createFile",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "data": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Files"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError"
+                    }
+                }
+            }
+        },
+        "/files/{id}": {
+            "get": {
+                "summary": "Retrieve a Files",
+                "description": "Retrieve a single file by unique identifier.",
+                "tags": [
+                    "Files"
+                ],
+                "operationId": "getFile",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/UUId"
+                    },
+                    {
+                        "$ref": "#/components/parameters/Fields"
+                    },
+                    {
+                        "$ref": "#/components/parameters/Meta"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Files"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError"
+                    }
+                }
+            }
+        },
+        "/fields": {
+            "get": {
+                "summary": "List All Fields",
+                "description": "Returns a list of the fields available in the project.",
+                "operationId": "getFields",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/Limit"
+                    },
+                    {
+                        "$ref": "#/components/parameters/Sort"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Fields"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFoundError"
+                    }
+                },
+                "tags": [
+                    "Fields"
+                ]
+            }
+        },
+        "/fields/{collection}": {
+            "get": {
+                "summary": "List Fields in Collection",
+                "description": "Returns a list of the fields available in the given collection.",
+                "operationId": "getCollectionFields",
+                "parameters": [
+                    {
+                        "description": "Unique identifier of the collection the item resides in.",
+                        "in": "path",
+                        "name": "collection",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "$ref": "#/components/parameters/Sort"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Fields"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFoundError"
+                    }
+                },
+                "tags": [
+                    "Fields"
+                ]
+            }
+        },
+        "/fields/{collection}/{id}": {
+            "get": {
+                "summary": "Retrieve a Field",
+                "description": "Retrieves the details of a single field in a given collection.",
+                "operationId": "getCollectionField",
+                "responses": {
+                    "200": {
+                        "description": "Successful request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Fields"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFoundError"
+                    }
+                },
+                "tags": [
+                    "Fields"
+                ],
+                "parameters": [
+                    {
+                        "name": "collection",
+                        "in": "path",
+                        "description": "Unique identifier of the collection the item resides in.",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "required": true
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Unique identifier of the field.",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "required": true
+                    }
+                ]
+            }
+        },
+        "/users": {
+            "get": {
+                "summary": "List Users",
+                "description": "List the users.",
+                "operationId": "getUsers",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/Fields"
+                    },
+                    {
+                        "$ref": "#/components/parameters/Limit"
+                    },
+                    {
+                        "$ref": "#/components/parameters/Offset"
+                    },
+                    {
+                        "$ref": "#/components/parameters/Meta"
+                    },
+                    {
+                        "$ref": "#/components/parameters/Sort"
+                    },
+                    {
+                        "$ref": "#/components/parameters/Filter"
+                    },
+                    {
+                        "$ref": "#/components/parameters/Search"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Users"
+                                            }
+                                        },
+                                        "meta": {
+                                            "$ref": "#/components/schemas/x-metadata"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFoundError"
+                    }
+                },
+                "tags": [
+                    "Users"
+                ]
+            }
+        },
+        "/users/{id}": {
+            "get": {
+                "summary": "Retrieve a User",
+                "description": "Retrieve a single user by unique identifier.",
+                "operationId": "getUser",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/UUId"
+                    },
+                    {
+                        "$ref": "#/components/parameters/Fields"
+                    },
+                    {
+                        "$ref": "#/components/parameters/Meta"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Users"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFoundError"
+                    }
+                },
+                "tags": [
+                    "Users"
+                ]
+            }
+        },
+        "/users/invite": {},
+        "/users/invite/accept": {},
+        "/users/me": {
+            "get": {
+                "summary": "Retrieve Current User",
+                "description": "Retrieve the currently authenticated user.",
+                "operationId": "getMe",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/Fields"
+                    },
+                    {
+                        "$ref": "#/components/parameters/Meta"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Users"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFoundError"
+                    }
+                },
+                "tags": [
+                    "Users"
+                ]
+            }
+        },
+        "/users/me/track/page": {},
+        "/users/me/tfa/enable": {},
+        "/users/me/tfa/disable": {},
+        "/items/bewertungKleinerKreis": {
+            "get": {
+                "summary": "List Items",
+                "description": "List the bewertungKleinerKreis items.",
+                "tags": [
+                    "Items",
+                    "ItemsBewertungKleinerKreis"
+                ],
+                "operationId": "readItemsBewertungKleinerKreis",
+                "security": [
+                    {
+                        "Auth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/Fields"
+                    },
+                    {
+                        "$ref": "#/components/parameters/Limit"
+                    },
+                    {
+                        "$ref": "#/components/parameters/Meta"
+                    },
+                    {
+                        "$ref": "#/components/parameters/Offset"
+                    },
+                    {
+                        "$ref": "#/components/parameters/Sort"
+                    },
+                    {
+                        "$ref": "#/components/parameters/Filter"
+                    },
+                    {
+                        "$ref": "#/components/parameters/Search"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "$ref": "#/components/schemas/ItemsBewertungKleinerKreis"
+                                            }
+                                        },
+                                        "meta": {
+                                            "$ref": "#/components/schemas/x-metadata"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError"
+                    }
+                }
+            }
+        },
+        "/items/bewertungKleinerKreis/{id}": {
+            "get": {
+                "summary": "Retrieve an Item",
+                "description": "Retrieve a single bewertungKleinerKreis item by unique identifier.",
+                "tags": [
+                    "Items",
+                    "ItemsBewertungKleinerKreis"
+                ],
+                "operationId": "readSingleItemsBewertungKleinerKreis",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/Fields"
+                    },
+                    {
+                        "$ref": "#/components/parameters/Meta"
+                    },
+                    {
+                        "$ref": "#/components/parameters/Version"
+                    },
+                    {
+                        "name": "id",
+                        "description": "Index of the item.",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "oneOf": [
+                                {
+                                    "type": "integer",
+                                    "description": "Incremental index of the item.",
+                                    "example": 1
+                                },
+                                {
+                                    "type": "string",
+                                    "description": "Unique identifier of the item.",
+                                    "example": "8cbb43fe-4cdf-4991-8352-c461779cec02"
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "$ref": "#/components/schemas/ItemsBewertungKleinerKreis"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFoundError"
+                    }
+                }
+            }
+        },
         "/items/objekt": {
             "post": {
                 "summary": "Create an Item",
@@ -1179,138 +1752,6 @@
                         }
                     }
                 ]
-            }
-        },
-        "/items/bewertungKleinerKreis": {
-            "get": {
-                "summary": "List Items",
-                "description": "List the bewertungKleinerKreis items.",
-                "tags": [
-                    "Items",
-                    "ItemsBewertungKleinerKreis"
-                ],
-                "operationId": "readItemsBewertungKleinerKreis",
-                "security": [
-                    {
-                        "Auth": []
-                    }
-                ],
-                "parameters": [
-                    {
-                        "$ref": "#/components/parameters/Fields"
-                    },
-                    {
-                        "$ref": "#/components/parameters/Limit"
-                    },
-                    {
-                        "$ref": "#/components/parameters/Meta"
-                    },
-                    {
-                        "$ref": "#/components/parameters/Offset"
-                    },
-                    {
-                        "$ref": "#/components/parameters/Sort"
-                    },
-                    {
-                        "$ref": "#/components/parameters/Filter"
-                    },
-                    {
-                        "$ref": "#/components/parameters/Search"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful request",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "object",
-                                                "$ref": "#/components/schemas/ItemsBewertungKleinerKreis"
-                                            }
-                                        },
-                                        "meta": {
-                                            "$ref": "#/components/schemas/x-metadata"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/UnauthorizedError"
-                    }
-                }
-            }
-        },
-        "/items/bewertungKleinerKreis/{id}": {
-            "get": {
-                "summary": "Retrieve an Item",
-                "description": "Retrieve a single bewertungKleinerKreis item by unique identifier.",
-                "tags": [
-                    "Items",
-                    "ItemsBewertungKleinerKreis"
-                ],
-                "operationId": "readSingleItemsBewertungKleinerKreis",
-                "parameters": [
-                    {
-                        "$ref": "#/components/parameters/Fields"
-                    },
-                    {
-                        "$ref": "#/components/parameters/Meta"
-                    },
-                    {
-                        "$ref": "#/components/parameters/Version"
-                    },
-                    {
-                        "name": "id",
-                        "description": "Index of the item.",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "oneOf": [
-                                {
-                                    "type": "integer",
-                                    "description": "Incremental index of the item.",
-                                    "example": 1
-                                },
-                                {
-                                    "type": "string",
-                                    "description": "Unique identifier of the item.",
-                                    "example": "8cbb43fe-4cdf-4991-8352-c461779cec02"
-                                }
-                            ]
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful request",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "object",
-                                            "$ref": "#/components/schemas/ItemsBewertungKleinerKreis"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/UnauthorizedError"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/NotFoundError"
-                    }
-                }
             }
         },
         "/items/objekt_files": {
@@ -1726,13 +2167,28 @@
             ]
         },
         {
-            "name": "ItemsObjekt",
-            "x-collection": "objekt",
-            "description": "Objekte, die für die Ausstellung eingereicht sind und geprüft werden können"
+            "name": "Files",
+            "description": "Files can be saved in any given location. Directus has a powerful assets endpoint that can be used to generate thumbnails for images on the fly.",
+            "x-collection": "directus_files"
+        },
+        {
+            "name": "Fields",
+            "description": "Fields are individual pieces of content within an item. They are mapped to columns in the database.",
+            "x-collection": "directus_fields"
+        },
+        {
+            "name": "Users",
+            "description": "Users are what gives you access to the data.",
+            "x-collection": "directus_users"
         },
         {
             "name": "ItemsBewertungKleinerKreis",
             "x-collection": "bewertungKleinerKreis"
+        },
+        {
+            "name": "ItemsObjekt",
+            "x-collection": "objekt",
+            "description": "Objekte, die für die Ausstellung eingereicht sind und geprüft werden können"
         },
         {
             "name": "ItemsObjektFiles",
@@ -1787,12 +2243,6 @@
                         ],
                         "nullable": true
                     },
-                    "created_on": {
-                        "description": "When the file was created.",
-                        "example": "2019-12-03T00:10:15+00:00",
-                        "type": "string",
-                        "format": "date-time"
-                    },
                     "uploaded_by": {
                         "description": "Who uploaded the file.",
                         "example": "63716273-0f29-4648-8a2a-2af2948f6f78",
@@ -1805,11 +2255,28 @@
                             }
                         ]
                     },
-                    "uploaded_on": {
-                        "description": "When the file was last uploaded/replaced.",
+                    "created_on": {
+                        "description": "When the file was created.",
                         "example": "2019-12-03T00:10:15+00:00",
                         "type": "string",
                         "format": "date-time"
+                    },
+                    "modified_by": {
+                        "nullable": true,
+                        "oneOf": [
+                            {
+                                "type": "string",
+                                "format": "uuid"
+                            },
+                            {
+                                "$ref": "#/components/schemas/Users"
+                            }
+                        ]
+                    },
+                    "modified_on": {
+                        "nullable": false,
+                        "type": "string",
+                        "format": "timestamp"
                     },
                     "charset": {
                         "description": "Character set of the file.",
@@ -1868,6 +2335,27 @@
                         "description": "IPTC, Exif, and ICC metadata extracted from file",
                         "type": "object",
                         "nullable": true
+                    },
+                    "focal_point_x": {
+                        "nullable": true,
+                        "type": "integer"
+                    },
+                    "focal_point_y": {
+                        "nullable": true,
+                        "type": "integer"
+                    },
+                    "tus_id": {
+                        "nullable": true,
+                        "type": "string"
+                    },
+                    "tus_data": {
+                        "nullable": true
+                    },
+                    "uploaded_on": {
+                        "description": "When the file was last uploaded/replaced.",
+                        "example": "2019-12-03T00:10:15+00:00",
+                        "type": "string",
+                        "format": "date-time"
                     }
                 },
                 "x-collection": "directus_files"
@@ -1959,99 +2447,6 @@
                         "example": "63716273-0f29-4648-8a2a-2af2948f6f78",
                         "type": "string"
                     },
-                    "first_name": {
-                        "description": "First name of the user.",
-                        "example": "Admin",
-                        "type": "string"
-                    },
-                    "last_name": {
-                        "description": "Last name of the user.",
-                        "example": "User",
-                        "type": "string"
-                    },
-                    "email": {
-                        "description": "Unique email address for the user.",
-                        "example": "admin@example.com",
-                        "type": "string",
-                        "format": "email"
-                    },
-                    "password": {
-                        "description": "Password of the user.",
-                        "type": "string"
-                    },
-                    "location": {
-                        "description": "The user's location.",
-                        "example": null,
-                        "type": "string",
-                        "nullable": true
-                    },
-                    "title": {
-                        "description": "The user's title.",
-                        "example": null,
-                        "type": "string",
-                        "nullable": true
-                    },
-                    "description": {
-                        "description": "The user's description.",
-                        "example": null,
-                        "type": "string",
-                        "nullable": true
-                    },
-                    "tags": {
-                        "description": "The user's tags.",
-                        "example": null,
-                        "type": "array",
-                        "nullable": true,
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    "avatar": {
-                        "description": "The user's avatar.",
-                        "example": null,
-                        "oneOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "$ref": "#/components/schemas/Files"
-                            }
-                        ],
-                        "nullable": true
-                    },
-                    "language": {
-                        "description": "The user's language used in Directus.",
-                        "example": "en-US",
-                        "type": "string"
-                    },
-                    "theme": {
-                        "description": "What theme the user is using.",
-                        "example": "auto",
-                        "type": "string",
-                        "enum": [
-                            "light",
-                            "dark",
-                            "auto"
-                        ]
-                    },
-                    "tfa_secret": {
-                        "description": "The 2FA secret string that's used to generate one time passwords.",
-                        "example": null,
-                        "type": "string",
-                        "nullable": true
-                    },
-                    "status": {
-                        "description": "Status of the user.",
-                        "example": "active",
-                        "type": "string",
-                        "enum": [
-                            "active",
-                            "invited",
-                            "draft",
-                            "suspended",
-                            "deleted"
-                        ]
-                    },
                     "role": {
                         "description": "Unique identifier of the role of this user.",
                         "example": "2f24211d-d928-469a-aea3-3c8f53d4e426",
@@ -2063,24 +2458,6 @@
                                 "$ref": "#/components/schemas/Roles"
                             }
                         ]
-                    },
-                    "token": {
-                        "description": "Static token for the user.",
-                        "type": "string",
-                        "nullable": true
-                    },
-                    "last_access": {
-                        "description": "When this user used the API last.",
-                        "example": "2020-05-31T14:32:37Z",
-                        "type": "string",
-                        "nullable": true,
-                        "format": "date-time"
-                    },
-                    "last_page": {
-                        "description": "Last page that the user was on.",
-                        "example": "/my-project/settings/collections/a",
-                        "type": "string",
-                        "nullable": true
                     }
                 },
                 "x-collection": "directus_users"
@@ -2157,6 +2534,113 @@
                     }
                 }
             },
+            "Fields": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "nullable": false,
+                        "type": "integer"
+                    },
+                    "collection": {
+                        "description": "Unique name of the collection this field is in.",
+                        "example": "about_us",
+                        "type": "string"
+                    },
+                    "field": {
+                        "description": "Unique name of the field. Field name is unique within the collection.",
+                        "example": "id",
+                        "type": "string"
+                    },
+                    "special": {
+                        "nullable": true,
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "interface": {
+                        "nullable": true,
+                        "type": "string"
+                    },
+                    "options": {
+                        "nullable": true
+                    },
+                    "display": {
+                        "nullable": true,
+                        "type": "string"
+                    },
+                    "display_options": {
+                        "nullable": true
+                    },
+                    "readonly": {
+                        "nullable": false,
+                        "type": "boolean"
+                    },
+                    "hidden": {
+                        "nullable": false,
+                        "type": "boolean"
+                    },
+                    "sort": {
+                        "nullable": true,
+                        "type": "integer"
+                    },
+                    "width": {
+                        "nullable": true,
+                        "type": "string"
+                    },
+                    "translations": {
+                        "nullable": true
+                    },
+                    "note": {
+                        "nullable": true,
+                        "type": "string"
+                    },
+                    "conditions": {
+                        "nullable": true
+                    },
+                    "required": {
+                        "nullable": true,
+                        "type": "boolean"
+                    },
+                    "group": {
+                        "nullable": true,
+                        "oneOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "$ref": "#/components/schemas/Fields"
+                            }
+                        ]
+                    },
+                    "validation": {
+                        "nullable": true
+                    },
+                    "validation_message": {
+                        "nullable": true,
+                        "type": "string"
+                    }
+                },
+                "x-collection": "directus_fields"
+            },
+            "ItemsBewertungKleinerKreis": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "nullable": false,
+                        "type": "integer"
+                    },
+                    "bezeichner": {
+                        "nullable": true,
+                        "type": "string"
+                    },
+                    "rangfolge": {
+                        "nullable": true,
+                        "type": "integer"
+                    }
+                },
+                "x-collection": "bewertungKleinerKreis"
+            },
             "ItemsObjekt": {
                 "type": "object",
                 "properties": {
@@ -2170,8 +2654,15 @@
                     },
                     "user_created": {
                         "nullable": true,
-                        "type": "string",
-                        "format": "uuid"
+                        "oneOf": [
+                            {
+                                "type": "string",
+                                "format": "uuid"
+                            },
+                            {
+                                "$ref": "#/components/schemas/Users"
+                            }
+                        ]
                     },
                     "date_created": {
                         "nullable": true,
@@ -2180,8 +2671,15 @@
                     },
                     "user_updated": {
                         "nullable": true,
-                        "type": "string",
-                        "format": "uuid"
+                        "oneOf": [
+                            {
+                                "type": "string",
+                                "format": "uuid"
+                            },
+                            {
+                                "$ref": "#/components/schemas/Users"
+                            }
+                        ]
                     },
                     "date_updated": {
                         "nullable": true,
@@ -2199,8 +2697,15 @@
                     "abbildung": {
                         "nullable": true,
                         "description": "Foto / Abbildung, auf dem das Objekt gezeigt wird",
-                        "type": "string",
-                        "format": "uuid"
+                        "oneOf": [
+                            {
+                                "type": "string",
+                                "format": "uuid"
+                            },
+                            {
+                                "$ref": "#/components/schemas/Files"
+                            }
+                        ]
                     },
                     "beschreibung": {
                         "nullable": true,
@@ -2253,6 +2758,10 @@
                         "nullable": true,
                         "type": "string"
                     },
+                    "type": {
+                        "nullable": true,
+                        "type": "string"
+                    },
                     "weitereAbbildungen": {
                         "nullable": true,
                         "description": "Weitere Abbildungen oder ergänzende Dateien",
@@ -2270,24 +2779,6 @@
                     }
                 },
                 "x-collection": "objekt"
-            },
-            "ItemsBewertungKleinerKreis": {
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "nullable": false,
-                        "type": "integer"
-                    },
-                    "bezeichner": {
-                        "nullable": true,
-                        "type": "string"
-                    },
-                    "rangfolge": {
-                        "nullable": true,
-                        "type": "integer"
-                    }
-                },
-                "x-collection": "bewertungKleinerKreis"
             },
             "ItemsObjektFiles": {
                 "type": "object",
@@ -2309,8 +2800,15 @@
                     },
                     "directus_files_id": {
                         "nullable": true,
-                        "type": "string",
-                        "format": "uuid"
+                        "oneOf": [
+                            {
+                                "type": "string",
+                                "format": "uuid"
+                            },
+                            {
+                                "$ref": "#/components/schemas/Files"
+                            }
+                        ]
                     }
                 },
                 "x-collection": "objekt_files"

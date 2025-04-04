@@ -385,7 +385,10 @@ async function uploadAllFiles(title: string): Promise<{ hauptbildId: string | nu
 
 // Expose methods to parent
 defineExpose({
-  uploadAllFiles
+  uploadAllFiles,
+  handleFilesAdded,
+  removeFile,
+  setAsMainFile
 })
 </script>
 

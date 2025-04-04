@@ -46,12 +46,6 @@ export const FilesSchema = {
             ],
             nullable: true
         },
-        created_on: {
-            description: 'When the file was created.',
-            example: '2019-12-03T00:10:15+00:00',
-            type: 'string',
-            format: 'date-time'
-        },
         uploaded_by: {
             description: 'Who uploaded the file.',
             example: '63716273-0f29-4648-8a2a-2af2948f6f78',
@@ -64,11 +58,28 @@ export const FilesSchema = {
                 }
             ]
         },
-        uploaded_on: {
-            description: 'When the file was last uploaded/replaced.',
+        created_on: {
+            description: 'When the file was created.',
             example: '2019-12-03T00:10:15+00:00',
             type: 'string',
             format: 'date-time'
+        },
+        modified_by: {
+            nullable: true,
+            oneOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    '$ref': '#/components/schemas/Users'
+                }
+            ]
+        },
+        modified_on: {
+            nullable: false,
+            type: 'string',
+            format: 'timestamp'
         },
         charset: {
             description: 'Character set of the file.',
@@ -127,6 +138,27 @@ export const FilesSchema = {
             description: 'IPTC, Exif, and ICC metadata extracted from file',
             type: 'object',
             nullable: true
+        },
+        focal_point_x: {
+            nullable: true,
+            type: 'integer'
+        },
+        focal_point_y: {
+            nullable: true,
+            type: 'integer'
+        },
+        tus_id: {
+            nullable: true,
+            type: 'string'
+        },
+        tus_data: {
+            nullable: true
+        },
+        uploaded_on: {
+            description: 'When the file was last uploaded/replaced.',
+            example: '2019-12-03T00:10:15+00:00',
+            type: 'string',
+            format: 'date-time'
         }
     },
     'x-collection': 'directus_files'
@@ -213,6 +245,29 @@ export const RolesSchema = {
     'x-collection': 'directus_roles'
 } as const;
 
+export const UsersSchema = {
+    type: 'object',
+    properties: {
+        id: {
+            description: 'Unique identifier for the user.',
+            example: '63716273-0f29-4648-8a2a-2af2948f6f78',
+            type: 'string'
+        },
+        role: {
+            description: 'Unique identifier of the role of this user.',
+            example: '2f24211d-d928-469a-aea3-3c8f53d4e426',
+            oneOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    '$ref': '#/components/schemas/Roles'
+                }
+            ]
+        }
+    },
+    'x-collection': 'directus_users'
+} as const;
 
 export const QuerySchema = {
     type: 'object',
@@ -283,6 +338,115 @@ export const x_metadataSchema = {
     }
 } as const;
 
+export const FieldsSchema = {
+    type: 'object',
+    properties: {
+        id: {
+            nullable: false,
+            type: 'integer'
+        },
+        collection: {
+            description: 'Unique name of the collection this field is in.',
+            example: 'about_us',
+            type: 'string'
+        },
+        field: {
+            description: 'Unique name of the field. Field name is unique within the collection.',
+            example: 'id',
+            type: 'string'
+        },
+        special: {
+            nullable: true,
+            type: 'array',
+            items: {
+                type: 'string'
+            }
+        },
+        interface: {
+            nullable: true,
+            type: 'string'
+        },
+        options: {
+            nullable: true
+        },
+        display: {
+            nullable: true,
+            type: 'string'
+        },
+        display_options: {
+            nullable: true
+        },
+        readonly: {
+            nullable: false,
+            type: 'boolean'
+        },
+        hidden: {
+            nullable: false,
+            type: 'boolean'
+        },
+        sort: {
+            nullable: true,
+            type: 'integer'
+        },
+        width: {
+            nullable: true,
+            type: 'string'
+        },
+        translations: {
+            nullable: true
+        },
+        note: {
+            nullable: true,
+            type: 'string'
+        },
+        conditions: {
+            nullable: true
+        },
+        required: {
+            nullable: true,
+            type: 'boolean'
+        },
+        group: {
+            nullable: true,
+            oneOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    '$ref': '#/components/schemas/Fields'
+                }
+            ]
+        },
+        validation: {
+            nullable: true
+        },
+        validation_message: {
+            nullable: true,
+            type: 'string'
+        }
+    },
+    'x-collection': 'directus_fields'
+} as const;
+
+export const ItemsBewertungKleinerKreisSchema = {
+    type: 'object',
+    properties: {
+        id: {
+            nullable: false,
+            type: 'integer'
+        },
+        bezeichner: {
+            nullable: true,
+            type: 'string'
+        },
+        rangfolge: {
+            nullable: true,
+            type: 'integer'
+        }
+    },
+    'x-collection': 'bewertungKleinerKreis'
+} as const;
+
 export const ItemsObjektSchema = {
     type: 'object',
     properties: {
@@ -296,8 +460,15 @@ export const ItemsObjektSchema = {
         },
         user_created: {
             nullable: true,
-            type: 'string',
-            format: 'uuid'
+            oneOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    '$ref': '#/components/schemas/Users'
+                }
+            ]
         },
         date_created: {
             nullable: true,
@@ -306,8 +477,15 @@ export const ItemsObjektSchema = {
         },
         user_updated: {
             nullable: true,
-            type: 'string',
-            format: 'uuid'
+            oneOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    '$ref': '#/components/schemas/Users'
+                }
+            ]
         },
         date_updated: {
             nullable: true,
@@ -325,8 +503,15 @@ export const ItemsObjektSchema = {
         abbildung: {
             nullable: true,
             description: 'Foto / Abbildung, auf dem das Objekt gezeigt wird',
-            type: 'string',
-            format: 'uuid'
+            oneOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    '$ref': '#/components/schemas/Files'
+                }
+            ]
         },
         beschreibung: {
             nullable: true,
@@ -379,6 +564,10 @@ export const ItemsObjektSchema = {
             nullable: true,
             type: 'string'
         },
+        type: {
+            nullable: true,
+            type: 'string'
+        },
         weitereAbbildungen: {
             nullable: true,
             description: 'Weitere Abbildungen oder ergänzende Dateien',
@@ -396,25 +585,6 @@ export const ItemsObjektSchema = {
         }
     },
     'x-collection': 'objekt'
-} as const;
-
-export const ItemsBewertungKleinerKreisSchema = {
-    type: 'object',
-    properties: {
-        id: {
-            nullable: false,
-            type: 'integer'
-        },
-        bezeichner: {
-            nullable: true,
-            type: 'string'
-        },
-        rangfolge: {
-            nullable: true,
-            type: 'integer'
-        }
-    },
-    'x-collection': 'bewertungKleinerKreis'
 } as const;
 
 export const ItemsObjektFilesSchema = {
@@ -437,133 +607,16 @@ export const ItemsObjektFilesSchema = {
         },
         directus_files_id: {
             nullable: true,
-            type: 'string',
-            format: 'uuid'
-        }
-    },
-    'x-collection': 'objekt_files'
-} as const;
-export const UsersSchema = {
-    type: 'object',
-    properties: {
-        id: {
-            description: 'Unique identifier for the user.',
-            example: '63716273-0f29-4648-8a2a-2af2948f6f78',
-            type: 'string'
-        },
-        first_name: {
-            description: 'First name of the user.',
-            example: 'Admin',
-            type: 'string'
-        },
-        last_name: {
-            description: 'Last name of the user.',
-            example: 'User',
-            type: 'string'
-        },
-        email: {
-            description: 'Unique email address for the user.',
-            example: 'admin@example.com',
-            type: 'string',
-            format: 'email'
-        },
-        password: {
-            description: 'Password of the user.',
-            type: 'string'
-        },
-        location: {
-            description: "The user's location.",
-            example: null,
-            type: 'string',
-            nullable: true
-        },
-        title: {
-            description: "The user's title.",
-            example: null,
-            type: 'string',
-            nullable: true
-        },
-        description: {
-            description: "The user's description.",
-            example: null,
-            type: 'string',
-            nullable: true
-        },
-        tags: {
-            description: "The user's tags.",
-            example: null,
-            type: 'array',
-            nullable: true,
-            items: {
-                type: 'string'
-            }
-        },
-        avatar: {
-            description: "The user's avatar.",
-            example: null,
             oneOf: [
                 {
-                    type: 'string'
+                    type: 'string',
+                    format: 'uuid'
                 },
                 {
                     '$ref': '#/components/schemas/Files'
                 }
-            ],
-            nullable: true
-        },
-        language: {
-            description: "The user's language used in Directus.",
-            example: 'en-US',
-            type: 'string'
-        },
-        theme: {
-            description: 'What theme the user is using.',
-            example: 'auto',
-            type: 'string',
-            enum: ['light', 'dark', 'auto']
-        },
-        tfa_secret: {
-            description: "The 2FA secret string that's used to generate one time passwords.",
-            example: null,
-            type: 'string',
-            nullable: true
-        },
-        status: {
-            description: 'Status of the user.',
-            example: 'active',
-            type: 'string',
-            enum: ['active', 'invited', 'draft', 'suspended', 'deleted']
-        },
-        role: {
-            description: 'Unique identifier of the role of this user.',
-            example: '2f24211d-d928-469a-aea3-3c8f53d4e426',
-            oneOf: [
-                {
-                    type: 'string'
-                },
-                {
-                    '$ref': '#/components/schemas/Roles'
-                }
             ]
-        },
-        token: {
-            description: 'Static token for the user.',
-            type: 'string',
-            nullable: true
-        },
-        last_access: {
-            description: 'When this user used the API last.',
-            example: '2020-05-31T14:32:37Z',
-            type: 'string',
-            nullable: true,
-            format: 'date-time'
-        },
-        last_page: {
-            description: 'Last page that the user was on.',
-            example: '/my-project/settings/collections/a',
-            type: 'string',
-            nullable: true
         }
     },
-    'x-collection': 'directus_users'
+    'x-collection': 'objekt_files'
 } as const;
