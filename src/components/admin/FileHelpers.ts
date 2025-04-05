@@ -94,8 +94,8 @@ export const getImageThumbnailUrl = (fileData: any, directusUrl: string, token: 
   const normalizedDirectusUrl = directusUrl.endsWith('/') ? directusUrl.slice(0, -1) : directusUrl;
   
   // if width or height is 0, don't add them to the url 
-  let widthParam = width > 0 ? `&width=${width}` : '';
-  let heightParam = height > 0 ? `&height=${height}` : '';
+  const widthParam = width > 0 ? `&width=${width}` : '';
+  const heightParam = height > 0 ? `&height=${height}` : '';
 
   return `${normalizedDirectusUrl}/assets/${fileId}?${widthParam}${heightParam}&fit=cover&quality=80&access_token=${token}`;
 };

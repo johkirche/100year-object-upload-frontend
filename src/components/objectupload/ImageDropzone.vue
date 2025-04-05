@@ -51,12 +51,12 @@ function handleFileChange(event: Event) {
   <div 
     class="dropzone border-2 border-dashed rounded-lg p-8 transition-colors cursor-pointer text-center"
     :class="{ 'border-primary bg-primary/5': isDragging, 'border-gray-300 hover:border-primary': !isDragging }"
+    :disabled="props.disabled"
     @dragenter.prevent="onDragEnter"
     @dragleave.prevent="onDragLeave"
     @dragover.prevent="onDragOver"
     @drop.prevent="onDrop"
     @click="fileInput?.click()"
-    :disabled="props.disabled"
   >
     <div class="flex flex-col items-center">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">

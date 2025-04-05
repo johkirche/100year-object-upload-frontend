@@ -100,9 +100,11 @@ const toggleChild = (child: Option): void => {
                         <div v-for="option in options" :key="option.value">
                             <CommandItem :value="option.text" class="p-0">
                                 <div class="flex items-center space-x-2 p-2 w-full">
-                                    <Checkbox :id="option.value" :model-value="isParentChecked(option)"
+                                    <Checkbox
+:id="option.value" :model-value="isParentChecked(option)"
                                         @update:model-value="toggleParent(option)" />
-                                    <label :for="option.value"
+                                    <label
+:for="option.value"
                                         class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer w-full">
                                         {{ option.text }}
                                     </label>
@@ -111,12 +113,15 @@ const toggleChild = (child: Option): void => {
 
                             <!-- Render children if they exist -->
                             <div v-if="option.children && option.children.length > 0" class="ml-6">
-                                <CommandItem v-for="child in option.children" :key="child.value" :value="child.text"
+                                <CommandItem
+v-for="child in option.children" :key="child.value" :value="child.text"
                                     class="p-0">
                                     <div class="flex items-center space-x-2 p-2 w-full">
-                                        <Checkbox :id="child.value" :model-value="isChildChecked(child)"
+                                        <Checkbox
+:id="child.value" :model-value="isChildChecked(child)"
                                             @update:model-value="toggleChild(child)" />
-                                        <label :for="child.value"
+                                        <label
+:for="child.value"
                                             class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer w-full">
                                             {{ child.text }}
                                         </label>

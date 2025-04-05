@@ -34,21 +34,21 @@ export const useAuthStore = defineStore('auth', () => {
   // In development, use the proxy URL to avoid CORS issues
   const isDev = import.meta.env.DEV
   const directusServerUrl = import.meta.env.VITE_DIRECTUS_URL
-  
+
   // Use the proxy URL in development to avoid CORS issues
   // Must include the full URL (including protocol) for the SDK
-  const DIRECTUS_URL = isDev 
-    ? window.location.origin + '/directus' 
+  const DIRECTUS_URL = isDev
+    ? window.location.origin + '/directus'
     : directusServerUrl
-  
+
   // Admin role ID from environment variable
   const ADMIN_ROLE_ID = import.meta.env.VITE_ADMIN_ROLE_ID
-  
+
   // Create storage for persistent authentication
   const storage = new LocalStorage()
 
   console.log("DIRECTUS_URL: " + DIRECTUS_URL);
-  
+
 
   // Create directus client with custom storage
   const directus = createDirectus(DIRECTUS_URL)
@@ -60,19 +60,19 @@ export const useAuthStore = defineStore('auth', () => {
     if (!directusUser.value) {
       return false
     }
-    
-    
+
+
     // Check if user has admin role by comparing role ID with the admin role ID
     let roleId: string | null = null
-    
+
     if (typeof directusUser.value.role === 'object' && directusUser.value.role !== null) {
       roleId = directusUser.value.role.id || null
     } else if (typeof directusUser.value.role === 'string') {
       roleId = directusUser.value.role
     }
-    
+
     const isAdmin = roleId === ADMIN_ROLE_ID
-    
+
     return isAdmin
   })
 
@@ -81,11 +81,11 @@ export const useAuthStore = defineStore('auth', () => {
    */
   async function initAuth(): Promise<void> {
     const authData = storage.get()
-    
+
     if (authData?.access_token) {
       try {
         isLoading.value = true
-        
+
         // Check if token is expired and needs refresh
         const now = Date.now()
         if (authData.expires_at && authData.expires_at < now && authData.refresh_token) {
@@ -114,9 +114,8 @@ export const useAuthStore = defineStore('auth', () => {
       } finally {
         isLoading.value = false
       }
-    } else {
     }
-    
+
   }
 
   /**
@@ -129,7 +128,7 @@ export const useAuthStore = defineStore('auth', () => {
       const currentUser = await directus.request(readMe({
         fields: ['*', 'role.*']
       })) as Partial<Users>
-            
+
       if (currentUser) {
         directusUser.value = currentUser
       }
@@ -148,15 +147,15 @@ export const useAuthStore = defineStore('auth', () => {
   async function login(username: string, password: string): Promise<boolean> {
     isLoading.value = true
     error.value = null
-    
+
     try {
       // Authenticate user
       await directus.login(username, password)
-      
+
       // Set authentication status and fetch user data
       isAuthenticated.value = true
       await fetchCurrentUser()
-      
+
       return true
     } catch (err) {
       error.value = 'Invalid username or password'
@@ -173,7 +172,7 @@ export const useAuthStore = defineStore('auth', () => {
   async function logout(): Promise<void> {
     try {
       await directus.logout()
-      
+
       // Reset state
       directusUser.value = null
       isAuthenticated.value = false
@@ -194,7 +193,6 @@ export const useAuthStore = defineStore('auth', () => {
   // Get authentication token
   async function getAuthToken(): Promise<string> {
     try {
-      // @ts-ignore - Assuming the client has a getToken method
       const token = await directus.getToken()
       if (typeof token === 'string') {
         return token

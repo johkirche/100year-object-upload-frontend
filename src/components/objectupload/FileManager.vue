@@ -401,7 +401,7 @@ defineExpose({
         Dateien hochladen <span v-if="!props.filesOptional">(mind. 1 Bild erforderlich)</span>
         <span v-else>(optional)</span>
       </h2>
-      <ImageDropzone @files-added="handleFilesAdded" :disabled="isUploading" :acceptAllFiles="true" />
+      <ImageDropzone :disabled="isUploading" :accept-all-files="true" @files-added="handleFilesAdded" />
       <p class="mt-2 text-sm text-gray-500">
         <template v-if="!props.filesOptional">
           Bitte markieren Sie ein Bild als Hauptbild durch auswählen der Checkbox.
@@ -418,8 +418,8 @@ defineExpose({
       <button 
         type="button"
         class="absolute right-2 top-2 p-1 rounded-full hover:border-red-500"
-        @click="clearFileSizeError"
         aria-label="Dismiss"
+        @click="clearFileSizeError"
       >
         <X class="h-4 w-4" />
       </button>
@@ -440,8 +440,8 @@ defineExpose({
           <button 
             type="button"
             class="absolute -right-2 -top-2 bg-white rounded-full border border-gray-300 p-1 shadow-sm hover:bg-gray-100 hover:text-red-500"
-            @click="removeFile(index)"
             :disabled="isUploading"
+            @click="removeFile(index)"
           >
             <X class="h-4 w-4" />
           </button>
@@ -472,8 +472,8 @@ defineExpose({
             <Checkbox 
               :id="`main-file-${index}`"
               v-model="fileItem.isMain" 
-              @update:checked="() => setAsMainFile(index)"
               :disabled="isUploading || !fileItem.isImage"
+              @update:checked="() => setAsMainFile(index)"
             />
             <label :for="`main-file-${index}`" class="text-sm font-medium leading-none" :class="{ 'text-gray-400': !fileItem.isImage }">
               Hauptbild

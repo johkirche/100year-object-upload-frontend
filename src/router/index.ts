@@ -31,6 +31,14 @@ const routes: Array<RouteRecordRaw> = [
     }
   },
   {
+    path: '/similar',
+    name: 'SimilarObjectsDemo',
+    component: () => import('@/views/SimilarObjectsDemo.vue'),
+    meta: {
+      requiresAuth: true
+    }
+  },
+  {
     path: '/login',
     name: 'Login',
     component: () => import('@/views/Login.vue')

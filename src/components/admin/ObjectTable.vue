@@ -1,12 +1,7 @@
 <template>
   <div class="w-full">
     <div class="flex items-center py-4">
-      <Input
-        class="max-w-sm"
-        placeholder="Nach Namen filtern..."
-        :model-value="table.getColumn('name')?.getFilterValue() as string"
-        @update:model-value="table.getColumn('name')?.setFilterValue($event)"
-      />
+      <slot name="search-bar" />
       <DropdownMenu>
         <DropdownMenuTrigger as-child>
           <Button variant="outline" class="ml-auto">
@@ -50,8 +45,8 @@
                   <slot 
                     name="expanded-row" 
                     :row="row" 
-                    :updateAnmerkung="updateAnmerkung" 
-                    :updateBewertung="updateBewertung"
+                    :update-anmerkung="updateAnmerkung" 
+                    :update-bewertung="updateBewertung"
                   />
                 </TableCell>
               </TableRow>
@@ -103,7 +98,6 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Input } from '@/components/ui/input'
 import {
   Table as TableComponent,
   TableBody,

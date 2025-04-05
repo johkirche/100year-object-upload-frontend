@@ -3,7 +3,7 @@ import { useAuthStore } from './stores/auth'
 import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { ShieldCheck, LogOut, FileText, UploadIcon } from 'lucide-vue-next'
+import { ShieldCheck, LogOut, FileText, UploadIcon, Search } from 'lucide-vue-next'
 import Toaster from '@/components/ui/toast/Toaster.vue'
 
 // Initialize the auth store 
@@ -25,6 +25,11 @@ const viewObjects = () => {
   console.log("isAdmin:", authStore.isAdmin);
   console.log("isAuthenticated:", authStore.isAuthenticated);
   router.push('/admin')
+}
+
+// Navigate to similar objects demo
+const viewSimilarObjects = () => {
+  router.push('/similar')
 }
 </script>
 
@@ -48,11 +53,19 @@ const viewObjects = () => {
             </Button>
             <Button variant="ghost" class="flex w-full justify-start items-center gap-2" @click="viewObjects">
               <FileText class="h-4 w-4" />
-              <span>View Objects</span>
+              <span>Objekt-Tabelle</span>
             </Button>
-            <Button variant="ghost" class="flex w-full justify-start items-center gap-2 text-red-500" @click="handleLogout">
+            <Button variant="ghost" class="flex w-full justify-start items-center gap-2" @click="viewSimilarObjects">
+              <Search class="h-4 w-4" />
+              <div class="flex flex-col items-start">
+                <span>Ähnliche Objekte</span>
+                <span class="text-xs text-gray-500">Demo</span>
+              </div>
+            </Button>
+            <Button variant="ghost" class="flex w-full justify-start items-center gap-2 text-red-500"
+              @click="handleLogout">
               <LogOut class="h-4 w-4" />
-              <span>Logout</span>
+              <span>Abmelden</span>
             </Button>
           </div>
         </PopoverContent>

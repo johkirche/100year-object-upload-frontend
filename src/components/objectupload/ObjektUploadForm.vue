@@ -406,7 +406,8 @@ onMounted(async () => {
 <template>
     <div>
         <!-- General Error Message (Shown only with the form) -->
-        <div v-if="uploadError && !isUploading && !uploadSuccess"
+        <div
+v-if="uploadError && !isUploading && !uploadSuccess"
             class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
             {{ uploadError }}
         </div>
@@ -459,24 +460,28 @@ onMounted(async () => {
 
                 <!-- FileManager shown during upload and after success (only for objects, not wishes) -->
                 <div v-if="submissionType === 'object'">
-                    <FileManager v-model="files" :error="uploadError" @error="uploadError = $event" ref="fileManagerRef"
-                        :is-uploading="isUploading" :disable-upload-area="disableFileManagerUploadArea" :files-optional="true" />
+                    <FileManager
+ref="fileManagerRef" v-model="files" :error="uploadError" :is-uploading="isUploading"
+                        :disable-upload-area="disableFileManagerUploadArea" :files-optional="true" @error="uploadError = $event" />
                 </div>
 
                 <!-- Error during upload -->
-                <div v-if="uploadError && isUploading"
+                <div
+v-if="uploadError && isUploading"
                     class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mt-6">
                     Upload Fehler: {{ uploadError }}
                 </div>
 
                 <!-- Uploading Spinner -->
-                <div class="flex justify-center mt-6" v-if="isUploading">
+                <div v-if="isUploading" class="flex justify-center mt-6">
                     <Button type="button" :disabled="true" class="w-full md:w-auto opacity-75 cursor-not-allowed">
-                        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg"
+                        <svg
+class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg"
                             fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
                             </circle>
-                            <path class="opacity-75" fill="currentColor"
+                            <path
+class="opacity-75" fill="currentColor"
                                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
                             </path>
                         </svg>
@@ -506,13 +511,14 @@ onMounted(async () => {
                     </div>
                 </div>
                 <div class="w-full bg-gray-200 rounded-full h-2.5 mt-2">
-                    <div class="bg-primary h-2.5 rounded-full"
+                    <div
+class="bg-primary h-2.5 rounded-full"
                         :style="{width: currentStep === 'object-info' ? '50%' : currentStep === 'submitter-info' ? '100%' : '0%'}"></div>
                 </div>
             </div>
 
             <!-- Step 1: Type Selection -->
-            <Form v-show="currentStep === 'type-selection'" @submit="onStepSubmit" :validation-schema="formValidationSchema" ref="typeSelectionFormRef" class="space-y-8">
+            <Form v-show="currentStep === 'type-selection'" ref="typeSelectionFormRef" :validation-schema="formValidationSchema" class="space-y-8" @submit="onStepSubmit">
                 <Card>
                     <CardHeader>
                         <CardTitle>Was möchten Sie einreichen?</CardTitle>
@@ -521,13 +527,13 @@ onMounted(async () => {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <FormField name="submissionType" v-slot="{ field, errorMessage }">
+                        <FormField v-slot="{ field, errorMessage }" name="submissionType">
                             <FormItem class="space-y-4">
                                 <FormControl>
                                     <RadioGroup
                                         :model-value="field.value"
-                                        @update:model-value="field.onChange"
                                         class="grid grid-cols-1 md:grid-cols-2 gap-4"
+                                        @update:model-value="field.onChange"
                                     >
                                         <div
                                             class="flex flex-col p-6 border rounded-md cursor-pointer hover:bg-gray-50"
@@ -583,7 +589,7 @@ onMounted(async () => {
             </Form>
 
             <!-- Step 2: Object Information -->
-            <Form v-show="currentStep === 'object-info'" @submit="onStepSubmit" :validation-schema="formValidationSchema" ref="objectInfoFormRef" class="space-y-8">
+            <Form v-show="currentStep === 'object-info'" ref="objectInfoFormRef" :validation-schema="formValidationSchema" class="space-y-8" @submit="onStepSubmit">
                 <Card>
                     <CardHeader>
                         <CardTitle>
@@ -597,12 +603,13 @@ onMounted(async () => {
                     </CardHeader>
                     <CardContent class="space-y-6">
                         <!-- Name des Objekts -->
-                        <FormField name="name" v-slot="{ field, errorMessage }">
+                        <FormField v-slot="{ field, errorMessage }" name="name">
                             <FormItem>
                                 <FormLabel>Name des Objekts</FormLabel>
                                 <FormControl>
                                     <div class="relative">
-                                        <Input v-bind="field" placeholder="z.B. Bibel aus der Gemeinde Berlin"
+                                        <Input
+v-bind="field" placeholder="z.B. Bibel aus der Gemeinde Berlin"
                                             maxlength="128" />
                                         <div class="absolute bottom-1 right-2 text-xs text-muted-foreground">
                                             {{ (field.value?.length || 0) }}/128
@@ -614,12 +621,13 @@ onMounted(async () => {
                             </FormItem>
                         </FormField>
 
-                        <FormField name="beschreibung" v-slot="{ field, errorMessage }">
+                        <FormField v-slot="{ field, errorMessage }" name="beschreibung">
                             <FormItem>
                                 <FormLabel>Beschreibung</FormLabel>
                                 <FormControl>
                                     <div class="relative">
-                                        <textarea v-bind="field"
+                                        <textarea
+v-bind="field"
                                             class="flex min-h-32 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                                             placeholder="Beschreiben Sie das Objekt und seine Bedeutung"></textarea>
                                         <div class="absolute bottom-1 right-2 text-xs text-muted-foreground">
@@ -637,7 +645,7 @@ onMounted(async () => {
 
                         <!-- Additional fields only for Object Submissions -->
                         <div v-if="submissionType === 'object'" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <FormField name="datierung" v-slot="{ field, errorMessage }">
+                            <FormField v-slot="{ field, errorMessage }" name="datierung">
                                 <FormItem>
                                     <FormLabel>Datierung</FormLabel>
                                     <FormControl>
@@ -648,7 +656,7 @@ onMounted(async () => {
                                 </FormItem>
                             </FormField>
 
-                            <FormField name="art" v-slot="{ field, errorMessage }">
+                            <FormField v-slot="{ field, errorMessage }" name="art">
                                 <FormItem>
                                     <FormLabel>Objektart / Material / Medium</FormLabel>
                                     <FormControl>
@@ -659,7 +667,7 @@ onMounted(async () => {
                                 </FormItem>
                             </FormField>
 
-                            <FormField name="format" v-slot="{ field, errorMessage }">
+                            <FormField v-slot="{ field, errorMessage }" name="format">
                                 <FormItem>
                                     <FormLabel>Format / Größe</FormLabel>
                                     <FormControl>
@@ -670,12 +678,13 @@ onMounted(async () => {
                                 </FormItem>
                             </FormField>
 
-                            <FormField name="kategorie" v-slot="{ field, errorMessage }">
+                            <FormField v-slot="{ field, errorMessage }" name="kategorie">
                                 <FormItem>
                                     <FormLabel>Kategorien</FormLabel>
                                     <FormControl>
-                                        <HierarchicalMultiSelect :options="categoryOptions" :model-value="field.value"
-                                            @update:model-value="field.onChange($event)" placeholder="Kategorie(n) auswählen ..." />
+                                        <HierarchicalMultiSelect
+:options="categoryOptions" :model-value="field.value"
+                                            placeholder="Kategorie(n) auswählen ..." @update:model-value="field.onChange($event)" />
                                     </FormControl>
                                     <FormDescription>
                                         Wählen Sie eine oder mehrere Kategorien aus
@@ -688,8 +697,9 @@ onMounted(async () => {
                         <!-- File Upload section only for object submissions -->
                         <div v-if="submissionType === 'object'" class="pt-4">
                             <h3 class="text-lg font-medium mb-2">Bilder oder Dokumente des Objekts</h3>
-                            <FileManager v-model="files" :error="uploadError" @error="uploadError = $event" ref="fileManagerRef"
-                                :is-uploading="isUploading" :disable-upload-area="disableFileManagerUploadArea" :files-optional="true" />
+                            <FileManager
+ref="fileManagerRef" v-model="files" :error="uploadError" :is-uploading="isUploading"
+                                :disable-upload-area="disableFileManagerUploadArea" :files-optional="true" @error="uploadError = $event" />
                         </div>
                     </CardContent>
                     <CardFooter class="flex justify-between">
@@ -706,7 +716,7 @@ onMounted(async () => {
             </Form>
 
             <!-- Step 3: Submitter Information -->
-            <Form v-show="currentStep === 'submitter-info'" @submit="onStepSubmit" :validation-schema="formValidationSchema" ref="submitterInfoFormRef" class="space-y-8">
+            <Form v-show="currentStep === 'submitter-info'" ref="submitterInfoFormRef" :validation-schema="formValidationSchema" class="space-y-8" @submit="onStepSubmit">
                 <Card>
                     <CardHeader>
                         <CardTitle>Ihre Kontaktinformationen</CardTitle>
@@ -716,7 +726,7 @@ onMounted(async () => {
                     </CardHeader>
                     <CardContent class="space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <FormField name="einreicherName" v-slot="{ field, errorMessage }">
+                            <FormField v-slot="{ field, errorMessage }" name="einreicherName">
                                 <FormItem>
                                     <FormLabel>Name des Einreichers</FormLabel>
                                     <FormControl>
@@ -727,7 +737,7 @@ onMounted(async () => {
                                 </FormItem>
                             </FormField>
 
-                            <FormField name="einreicherGemeinde" v-slot="{ field, errorMessage }">
+                            <FormField v-slot="{ field, errorMessage }" name="einreicherGemeinde">
                                 <FormItem>
                                     <FormLabel>Gemeinde des Einreichers</FormLabel>
                                     <FormControl>
@@ -747,7 +757,7 @@ onMounted(async () => {
                                 </FormItem>
                             </FormField>
 
-                            <FormField name="kontaktRueckfrage" v-slot="{ field, errorMessage }">
+                            <FormField v-slot="{ field, errorMessage }" name="kontaktRueckfrage">
                                 <FormItem>
                                     <FormLabel>Kontakt für Rückfragen</FormLabel>
                                     <FormControl>
@@ -760,7 +770,7 @@ onMounted(async () => {
 
                             <!-- Object-specific fields -->
                             <div v-if="submissionType === 'object'">
-                                <FormField name="aktuellerStandort" v-slot="{ field, errorMessage }">
+                                <FormField v-slot="{ field, errorMessage }" name="aktuellerStandort">
                                     <FormItem>
                                         <FormLabel>Aktueller Standort</FormLabel>
                                         <FormControl>
@@ -774,7 +784,7 @@ onMounted(async () => {
                         </div>
 
                         <div v-if="submissionType === 'object'">
-                            <FormField name="objektAusleihenFuerAusstellung" v-slot="{ field, errorMessage }">
+                            <FormField v-slot="{ field, errorMessage }" name="objektAusleihenFuerAusstellung">
                                 <FormItem class="flex flex-row items-start gap-x-3 space-y-0">
                                     <FormControl>
                                         <Checkbox :model-value="field.value" @update:model-value="field.onChange" />

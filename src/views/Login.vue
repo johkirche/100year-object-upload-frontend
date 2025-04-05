@@ -6,14 +6,14 @@
           Sign in to your account
         </h2>
       </div>
-      <Alert variant="destructive" v-if="authStore.error">
+      <Alert v-if="authStore.error" variant="destructive">
         <AlertCircle class="w-4 h-4" />
         <AlertTitle>Error</AlertTitle>
         <AlertDescription>
         {{ authStore.error }}
         </AlertDescription>
       </Alert>
-      <Form @submit="handleSubmit" class="mt-8 space-y-6">
+      <Form class="mt-8 space-y-6" @submit="handleSubmit">
         <div class="space-y-4">
           <FormField name="username">
             <FormItem>
