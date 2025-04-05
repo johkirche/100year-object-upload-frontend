@@ -2,7 +2,7 @@
 import { ref, computed, onMounted, reactive } from 'vue'
 import { z } from 'zod'
 import { toTypedSchema } from '@vee-validate/zod'
-import { createItem, readField } from '@directus/sdk'
+import { createItem } from '@directus/sdk'
 import type { ItemsObjekt } from '@/client/types.gen'
 import { UploadIcon, ArrowLeftIcon, ArrowRightIcon, ImageIcon, MessageSquareIcon } from 'lucide-vue-next'
 
@@ -16,6 +16,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group/'
 import type { ComponentPublicInstance } from 'vue'
 
 import { useAuthStore } from '@/stores/auth'
+import { useObjects } from '@/composables/useObjects'
 
 import FileManager from '@/components/objectupload/FileManager.vue'
 import HierarchicalMultiSelect from '@/components/objectupload/HierarchicalMultiSelect.vue'
@@ -33,6 +34,10 @@ z.setErrorMap((issue, ctx) => {
 // Get authentication from store
 const authStore = useAuthStore()
 const client = authStore.getClient()
+const { isAdmin } = authStore
+
+// Get useObjects composable
+const { getFieldOptions, buildCategoryLookup } = useObjects()
 
 // Form type and step state
 type SubmissionType = 'object' | 'wish' | null;
@@ -193,39 +198,39 @@ function prevStep() {
 }
 
 function resetAllForms() {
-  // Reset all vee-validate forms
-  if (typeSelectionFormRef.value) {
-    typeSelectionFormRef.value.resetForm({
-      values: {
-        submissionType: null
-      }
-    })
-  }
+    // Reset all vee-validate forms
+    if (typeSelectionFormRef.value) {
+        typeSelectionFormRef.value.resetForm({
+            values: {
+                submissionType: null
+            }
+        })
+    }
 
-  if (objectInfoFormRef.value) {
-    objectInfoFormRef.value.resetForm({
-      values: {
-        name: null,
-        beschreibung: null,
-        datierung: null,
-        kategorie: null,
-        art: null,
-        format: null
-      }
-    })
-  }
+    if (objectInfoFormRef.value) {
+        objectInfoFormRef.value.resetForm({
+            values: {
+                name: null,
+                beschreibung: null,
+                datierung: null,
+                kategorie: null,
+                art: null,
+                format: null
+            }
+        })
+    }
 
-  if (submitterInfoFormRef.value) {
-    submitterInfoFormRef.value.resetForm({
-      values: {
-        einreicherName: null,
-        einreicherGemeinde: 'keineAngabe',
-        kontaktRueckfrage: null,
-        objektAusleihenFuerAusstellung: false,
-        aktuellerStandort: null
-      }
-    })
-  }
+    if (submitterInfoFormRef.value) {
+        submitterInfoFormRef.value.resetForm({
+            values: {
+                einreicherName: null,
+                einreicherGemeinde: 'keineAngabe',
+                kontaktRueckfrage: null,
+                objektAusleihenFuerAusstellung: false,
+                aktuellerStandort: null
+            }
+        })
+    }
 }
 
 // Function to fully reset state for a new upload
@@ -262,21 +267,6 @@ function startNewUpload() {
 
     // Reset all vee-validate forms
     resetAllForms()
-}
-
-// Function to build the category lookup for display text
-function buildCategoryLookup(options: any[]) {
-    const lookup: Record<string, string> = {}
-
-    function processOption(option: any) {
-        lookup[option.value] = option.text
-        if (option.children && option.children.length > 0) {
-            option.children.forEach(processOption)
-        }
-    }
-
-    options.forEach(processOption)
-    return lookup
 }
 
 // Submit function for each step
@@ -379,21 +369,21 @@ async function onSubmit(values: any) {
 onMounted(async () => {
     try {
         // Fetch gemeinde options
-        const gemeindeField = await client.request(
-            readField("objekt", "einreicherGemeinde")
-        );
+        const gemeindeResult = await getFieldOptions("einreicherGemeinde");
 
-        if (gemeindeField.meta?.options?.choices) {
-            gemeindeOptions.value = gemeindeField.meta.options.choices;
+        if (gemeindeResult.error) {
+            uploadError.value = gemeindeResult.error;
+        } else {
+            gemeindeOptions.value = gemeindeResult.options;
         }
 
         // Fetch category options
-        const kategorieField = await client.request(
-            readField("objekt", "kategorie")
-        );
+        const kategorieResult = await getFieldOptions("kategorie");
 
-        if (kategorieField.meta?.options?.choices) {
-            categoryOptions.value = kategorieField.meta.options.choices;
+        if (kategorieResult.error) {
+            uploadError.value = kategorieResult.error;
+        } else {
+            categoryOptions.value = kategorieResult.options;
             categoryLookup.value = buildCategoryLookup(categoryOptions.value);
         }
     } catch (error) {
@@ -406,8 +396,7 @@ onMounted(async () => {
 <template>
     <div>
         <!-- General Error Message (Shown only with the form) -->
-        <div
-v-if="uploadError && !isUploading && !uploadSuccess"
+        <div v-if="uploadError && !isUploading && !uploadSuccess"
             class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
             {{ uploadError }}
         </div>
@@ -435,21 +424,29 @@ v-if="uploadError && !isUploading && !uploadSuccess"
                 <!-- Display Summary Data -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                     <div><strong>Name:</strong> {{ submittedValues.name }}</div>
-                    <div v-if="submissionType === 'object' && submittedValues.datierung"><strong>Datierung:</strong> {{ submittedValues.datierung }}</div>
-                    <div v-if="submissionType === 'object' && submittedValues.kategorie && submittedValues.kategorie.length">
+                    <div v-if="submissionType === 'object' && submittedValues.datierung"><strong>Datierung:</strong> {{
+                        submittedValues.datierung }}</div>
+                    <div
+                        v-if="submissionType === 'object' && submittedValues.kategorie && submittedValues.kategorie.length">
                         <strong>Kategorien:</strong>
-                        {{ submittedValues.kategorie.map((k: string) => categoryLookup[k] || k).join(', ') }}
+                        {{submittedValues.kategorie.map((k: string) => categoryLookup[k] || k).join(', ')}}
                     </div>
-                    <div v-if="submissionType === 'object' && submittedValues.art"><strong>Art:</strong> {{ submittedValues.art }}</div>
-                    <div v-if="submissionType === 'object' && submittedValues.format"><strong>Format:</strong> {{ submittedValues.format }}</div>
+                    <div v-if="submissionType === 'object' && submittedValues.art"><strong>Art:</strong> {{
+                        submittedValues.art }}
+                    </div>
+                    <div v-if="submissionType === 'object' && submittedValues.format"><strong>Format:</strong> {{
+                        submittedValues.format }}</div>
                     <div><strong>Einreicher:</strong> {{ submittedValues.einreicherName }} <span
                             v-if="submittedValues.einreicherGemeinde && submittedValues.einreicherGemeinde !== 'keineAngabe'">({{
-                            gemeindeOptions.find(g => g.value === submittedValues.einreicherGemeinde)?.text }})</span></div>
+                                gemeindeOptions.find(g => g.value === submittedValues.einreicherGemeinde)?.text}})</span>
+                    </div>
                     <div v-if="submittedValues.kontaktRueckfrage"><strong>Kontakt:</strong> {{
                         submittedValues.kontaktRueckfrage }}</div>
-                    <div v-if="submissionType === 'object' && submittedValues.aktuellerStandort"><strong>Akt. Standort:</strong> {{
-                        submittedValues.aktuellerStandort }}</div>
-                    <div v-if="submissionType === 'object'"><strong>Ausleihen?:</strong> {{ submittedValues.objektAusleihenFuerAusstellung ? 'Ja' : 'Nein' }}</div>
+                    <div v-if="submissionType === 'object' && submittedValues.aktuellerStandort"><strong>Akt.
+                            Standort:</strong> {{
+                                submittedValues.aktuellerStandort }}</div>
+                    <div v-if="submissionType === 'object'"><strong>Ausleihen?:</strong> {{
+                        submittedValues.objektAusleihenFuerAusstellung ? 'Ja' : 'Nein' }}</div>
                 </div>
 
                 <div v-if="submittedValues.beschreibung" class="mt-4">
@@ -460,14 +457,13 @@ v-if="uploadError && !isUploading && !uploadSuccess"
 
                 <!-- FileManager shown during upload and after success (only for objects, not wishes) -->
                 <div v-if="submissionType === 'object'">
-                    <FileManager
-ref="fileManagerRef" v-model="files" :error="uploadError" :is-uploading="isUploading"
-                        :disable-upload-area="disableFileManagerUploadArea" :files-optional="true" @error="uploadError = $event" />
+                    <FileManager ref="fileManagerRef" v-model="files" :error="uploadError" :is-uploading="isUploading"
+                        :disable-upload-area="disableFileManagerUploadArea" :files-optional="true"
+                        @error="uploadError = $event" />
                 </div>
 
                 <!-- Error during upload -->
-                <div
-v-if="uploadError && isUploading"
+                <div v-if="uploadError && isUploading"
                     class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mt-6">
                     Upload Fehler: {{ uploadError }}
                 </div>
@@ -475,13 +471,11 @@ v-if="uploadError && isUploading"
                 <!-- Uploading Spinner -->
                 <div v-if="isUploading" class="flex justify-center mt-6">
                     <Button type="button" :disabled="true" class="w-full md:w-auto opacity-75 cursor-not-allowed">
-                        <svg
-class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg"
+                        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg"
                             fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
                             </circle>
-                            <path
-class="opacity-75" fill="currentColor"
+                            <path class="opacity-75" fill="currentColor"
                                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
                             </path>
                         </svg>
@@ -500,25 +494,30 @@ class="opacity-75" fill="currentColor"
             <!-- Step Progress Indicator -->
             <div v-if="currentStep !== 'type-selection'" class="mb-6">
                 <div class="flex justify-between">
-                <div class="text-sm font-medium">
+                    <div class="text-sm font-medium">
                         <span class="text-gray-400">1. Auswahl</span>
                     </div>
                     <div class="text-sm font-medium">
-                        <span :class="{'text-primary': currentStep === 'object-info', 'text-gray-400': currentStep !== 'object-info'}">2. Objektinformationen</span>
+                        <span
+                            :class="{ 'text-primary': currentStep === 'object-info', 'text-gray-400': currentStep !== 'object-info' }">2.
+                            Objektinformationen</span>
                     </div>
                     <div class="text-sm font-medium">
-                        <span :class="{'text-primary': currentStep === 'submitter-info', 'text-gray-400': currentStep !== 'submitter-info'}">3. Kontaktinformationen</span>
+                        <span
+                            :class="{ 'text-primary': currentStep === 'submitter-info', 'text-gray-400': currentStep !== 'submitter-info' }">3.
+                            Kontaktinformationen</span>
                     </div>
                 </div>
                 <div class="w-full bg-gray-200 rounded-full h-2.5 mt-2">
-                    <div
-class="bg-primary h-2.5 rounded-full"
-                        :style="{width: currentStep === 'object-info' ? '50%' : currentStep === 'submitter-info' ? '100%' : '0%'}"></div>
+                    <div class="bg-primary h-2.5 rounded-full"
+                        :style="{ width: currentStep === 'object-info' ? '50%' : currentStep === 'submitter-info' ? '100%' : '0%' }">
+                    </div>
                 </div>
             </div>
 
             <!-- Step 1: Type Selection -->
-            <Form v-show="currentStep === 'type-selection'" ref="typeSelectionFormRef" :validation-schema="formValidationSchema" class="space-y-8" @submit="onStepSubmit">
+            <Form v-show="currentStep === 'type-selection'" ref="typeSelectionFormRef"
+                :validation-schema="formValidationSchema" class="space-y-8" @submit="onStepSubmit">
                 <Card>
                     <CardHeader>
                         <CardTitle>Was möchten Sie einreichen?</CardTitle>
@@ -530,16 +529,11 @@ class="bg-primary h-2.5 rounded-full"
                         <FormField v-slot="{ field, errorMessage }" name="submissionType">
                             <FormItem class="space-y-4">
                                 <FormControl>
-                                    <RadioGroup
-                                        :model-value="field.value"
-                                        class="grid grid-cols-1 md:grid-cols-2 gap-4"
-                                        @update:model-value="field.onChange"
-                                    >
-                                        <div
-                                            class="flex flex-col p-6 border rounded-md cursor-pointer hover:bg-gray-50"
-                                            :class="{'border-primary border-2 shadow-sm': field.value === 'object', 'border-input': field.value !== 'object'}"
-                                            @click="field.onChange('object')"
-                                        >
+                                    <RadioGroup :model-value="field.value" class="grid grid-cols-1 md:grid-cols-2 gap-4"
+                                        @update:model-value="field.onChange">
+                                        <div class="flex flex-col p-6 border rounded-md cursor-pointer hover:bg-gray-50"
+                                            :class="{ 'border-primary border-2 shadow-sm': field.value === 'object', 'border-input': field.value !== 'object' }"
+                                            @click="field.onChange('object')">
                                             <FormControl>
                                                 <RadioGroupItem value="object" class="sr-only" />
                                             </FormControl>
@@ -549,16 +543,15 @@ class="bg-primary h-2.5 rounded-full"
                                                 </div>
                                                 <FormLabel class="font-medium text-lg mb-2">Objektvorschlag</FormLabel>
                                                 <FormDescription>
-                                                    Ich besitze ein konkretes Objekt und möchte es für die Ausstellung vorschlagen
+                                                    Ich besitze ein konkretes Objekt und möchte es für die Ausstellung
+                                                    vorschlagen
                                                 </FormDescription>
                                             </div>
                                         </div>
 
-                                        <div
-                                            class="flex flex-col p-6 border rounded-md cursor-pointer hover:bg-gray-50"
-                                            :class="{'border-primary border-2 shadow-sm': field.value === 'wish', 'border-input': field.value !== 'wish'}"
-                                            @click="field.onChange('wish')"
-                                        >
+                                        <div class="flex flex-col p-6 border rounded-md cursor-pointer hover:bg-gray-50"
+                                            :class="{ 'border-primary border-2 shadow-sm': field.value === 'wish', 'border-input': field.value !== 'wish' }"
+                                            @click="field.onChange('wish')">
                                             <FormControl>
                                                 <RadioGroupItem value="wish" class="sr-only" />
                                             </FormControl>
@@ -566,9 +559,12 @@ class="bg-primary h-2.5 rounded-full"
                                                 <div class="p-2 rounded-full bg-primary/10 mb-4">
                                                     <MessageSquareIcon class="h-6 w-6 text-primary" />
                                                 </div>
-                                                <FormLabel class="font-medium text-lg mb-2">Ausstellungswunsch</FormLabel>
+                                                <FormLabel class="font-medium text-lg mb-2">Ausstellungswunsch
+                                                </FormLabel>
                                                 <FormDescription>
-                                                    Ich möchte ein Objekt vorschlagen, das in der Ausstellung gezeigt werden sollte
+                                                    Ich möchte ein Objekt vorschlagen, das in der Ausstellung gezeigt
+                                                    werden
+                                                    sollte
                                                 </FormDescription>
                                             </div>
                                         </div>
@@ -589,7 +585,8 @@ class="bg-primary h-2.5 rounded-full"
             </Form>
 
             <!-- Step 2: Object Information -->
-            <Form v-show="currentStep === 'object-info'" ref="objectInfoFormRef" :validation-schema="formValidationSchema" class="space-y-8" @submit="onStepSubmit">
+            <Form v-show="currentStep === 'object-info'" ref="objectInfoFormRef"
+                :validation-schema="formValidationSchema" class="space-y-8" @submit="onStepSubmit">
                 <Card>
                     <CardHeader>
                         <CardTitle>
@@ -597,7 +594,8 @@ class="bg-primary h-2.5 rounded-full"
                             <span v-else>Objektwunsch</span>
                         </CardTitle>
                         <CardDescription>
-                            <span v-if="submissionType === 'object'">Bitte geben Sie Informationen zu Ihrem Objekt an</span>
+                            <span v-if="submissionType === 'object'">Bitte geben Sie Informationen zu Ihrem Objekt
+                                an</span>
                             <span v-else>Bitte beschreiben Sie das gewünschte Ausstellungsobjekt</span>
                         </CardDescription>
                     </CardHeader>
@@ -608,8 +606,7 @@ class="bg-primary h-2.5 rounded-full"
                                 <FormLabel>Name des Objekts</FormLabel>
                                 <FormControl>
                                     <div class="relative">
-                                        <Input
-v-bind="field" placeholder="z.B. Bibel aus der Gemeinde Berlin"
+                                        <Input v-bind="field" placeholder="z.B. Bibel aus der Gemeinde Berlin"
                                             maxlength="128" />
                                         <div class="absolute bottom-1 right-2 text-xs text-muted-foreground">
                                             {{ (field.value?.length || 0) }}/128
@@ -626,8 +623,7 @@ v-bind="field" placeholder="z.B. Bibel aus der Gemeinde Berlin"
                                 <FormLabel>Beschreibung</FormLabel>
                                 <FormControl>
                                     <div class="relative">
-                                        <textarea
-v-bind="field"
+                                        <textarea v-bind="field"
                                             class="flex min-h-32 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                                             placeholder="Beschreiben Sie das Objekt und seine Bedeutung"></textarea>
                                         <div class="absolute bottom-1 right-2 text-xs text-muted-foreground">
@@ -636,7 +632,9 @@ v-bind="field"
                                     </div>
                                 </FormControl>
                                 <FormDescription>
-                                    <span v-if="submissionType === 'object'">Detaillierte Beschreibung des Objekts und seiner Geschichte</span>
+                                    <span v-if="submissionType === 'object'">Detaillierte Beschreibung des Objekts und
+                                        seiner
+                                        Geschichte</span>
                                     <span v-else>Warum sollte dieses Objekt in der Ausstellung gezeigt werden?</span>
                                 </FormDescription>
                                 <FormMessage>{{ errorMessage }}</FormMessage>
@@ -660,7 +658,8 @@ v-bind="field"
                                 <FormItem>
                                     <FormLabel>Objektart / Material / Medium</FormLabel>
                                     <FormControl>
-                                        <Input v-bind="field" placeholder="z.B. Foto, Broschüre, Gegenstand, Kleidungsstück, Filmaufnahme, ..." />
+                                        <Input v-bind="field"
+                                            placeholder="z.B. Foto, Broschüre, Gegenstand, Kleidungsstück, Filmaufnahme, ..." />
                                     </FormControl>
                                     <FormDescription>Material, Medium oder Art des Objekts</FormDescription>
                                     <FormMessage>{{ errorMessage }}</FormMessage>
@@ -678,13 +677,13 @@ v-bind="field"
                                 </FormItem>
                             </FormField>
 
-                            <FormField v-slot="{ field, errorMessage }" name="kategorie">
+                            <FormField v-slot="{ field, errorMessage }" name="kategorie" v-if="isAdmin">
                                 <FormItem>
                                     <FormLabel>Kategorien</FormLabel>
                                     <FormControl>
-                                        <HierarchicalMultiSelect
-:options="categoryOptions" :model-value="field.value"
-                                            placeholder="Kategorie(n) auswählen ..." @update:model-value="field.onChange($event)" />
+                                        <HierarchicalMultiSelect :options="categoryOptions" :model-value="field.value"
+                                            placeholder="Kategorie(n) auswählen ..."
+                                            @update:model-value="field.onChange($event)" />
                                     </FormControl>
                                     <FormDescription>
                                         Wählen Sie eine oder mehrere Kategorien aus
@@ -697,9 +696,9 @@ v-bind="field"
                         <!-- File Upload section only for object submissions -->
                         <div v-if="submissionType === 'object'" class="pt-4">
                             <h3 class="text-lg font-medium mb-2">Bilder oder Dokumente des Objekts</h3>
-                            <FileManager
-ref="fileManagerRef" v-model="files" :error="uploadError" :is-uploading="isUploading"
-                                :disable-upload-area="disableFileManagerUploadArea" :files-optional="true" @error="uploadError = $event" />
+                            <FileManager ref="fileManagerRef" v-model="files" :error="uploadError"
+                                :is-uploading="isUploading" :disable-upload-area="disableFileManagerUploadArea"
+                                :files-optional="true" @error="uploadError = $event" />
                         </div>
                     </CardContent>
                     <CardFooter class="flex justify-between">
@@ -716,7 +715,8 @@ ref="fileManagerRef" v-model="files" :error="uploadError" :is-uploading="isUploa
             </Form>
 
             <!-- Step 3: Submitter Information -->
-            <Form v-show="currentStep === 'submitter-info'" ref="submitterInfoFormRef" :validation-schema="formValidationSchema" class="space-y-8" @submit="onStepSubmit">
+            <Form v-show="currentStep === 'submitter-info'" ref="submitterInfoFormRef"
+                :validation-schema="formValidationSchema" class="space-y-8" @submit="onStepSubmit">
                 <Card>
                     <CardHeader>
                         <CardTitle>Ihre Kontaktinformationen</CardTitle>
@@ -746,7 +746,8 @@ ref="fileManagerRef" v-model="files" :error="uploadError" :is-uploading="isUploa
                                                 <SelectValue placeholder="Gemeinde auswählen" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem v-for="gemeinde in gemeindeOptions" :key="gemeinde.value" :value="gemeinde.value">
+                                                <SelectItem v-for="gemeinde in gemeindeOptions" :key="gemeinde.value"
+                                                    :value="gemeinde.value">
                                                     {{ gemeinde.text }}
                                                 </SelectItem>
                                             </SelectContent>
@@ -790,7 +791,8 @@ ref="fileManagerRef" v-model="files" :error="uploadError" :is-uploading="isUploa
                                         <Checkbox :model-value="field.value" @update:model-value="field.onChange" />
                                     </FormControl>
                                     <div class="space-y-1 leading-none">
-                                        <FormLabel>Ich würde das Objekt für eine Ausstellung zur Verfügung stellen</FormLabel>
+                                        <FormLabel>Ich würde das Objekt für eine Ausstellung zur Verfügung stellen
+                                        </FormLabel>
                                         <FormDescription>
                                             Bei Zustimmung kann das Objekt für zukünftige Ausstellungen angefragt werden
                                         </FormDescription>

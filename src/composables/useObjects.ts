@@ -1,9 +1,13 @@
 import { ref, computed } from 'vue'
-import { readItems, aggregate, updateItem } from '@directus/sdk'
+import { readItems, aggregate, updateItem, readField, deleteItem, deleteFiles } from '@directus/sdk'
 import type { ItemsObjekt } from '@/client/types.gen'
 import { useAuthStore } from '@/stores/auth'
+import { useToast } from '@/components/ui/toast/use-toast'
+
 
 export function useObjects() {
+  const { toast } = useToast()
+
   const authStore = useAuthStore()
   const directus = authStore.getClient()
   
@@ -58,6 +62,7 @@ export function useObjects() {
       'einreicherName',
       'einreicherGemeinde',
       'kontaktRueckfrage',
+      'kategorie',
       'status',
       'beschreibung',
       'anmerkung',
@@ -158,6 +163,138 @@ export function useObjects() {
     }
   }
   
+  // Delete an object
+  const deleteObject = async (objectId: string | number) => {
+    if (!objectId) {
+      error.value = 'Keine Objekt-ID angegeben'
+      toast({
+        title: 'Fehler',
+        description: 'Keine Objekt-ID angegeben',
+        variant: 'warning',
+      })
+      return false
+    }
+    
+    try {
+      // First, fetch the object to get file IDs
+      const objectToDelete = objects.value.find(item => item.id === objectId)
+      if (!objectToDelete) {
+        error.value = 'Objekt konnte nicht gefunden werden'
+        return false
+      }
+      
+      // Get file IDs to delete
+      const fileIds: string[] = []
+      
+      // Add main image if exists
+      if (objectToDelete?.abbildung) {
+        const mainFileId = typeof objectToDelete.abbildung === 'string' 
+          ? objectToDelete.abbildung 
+          : objectToDelete.abbildung.id
+        
+        if (mainFileId) fileIds.push(mainFileId)
+      }
+      
+      // Add additional images if they exist
+      if (objectToDelete?.weitereAbbildungen && objectToDelete.weitereAbbildungen.length > 0) {
+        objectToDelete.weitereAbbildungen.forEach(item => {
+          if (typeof item === 'object' && item.directus_files_id) {
+            const fileId = typeof item.directus_files_id === 'string' 
+              ? item.directus_files_id 
+              : item.directus_files_id.id
+            
+            if (fileId) fileIds.push(fileId)
+          }
+        })
+      }
+      
+      // First delete associated files (if any)
+      if (fileIds.length > 0) {
+        try {
+          await directus.request(
+            deleteFiles(fileIds)
+          )
+        } catch (fileErr) {
+          console.error('Error deleting files:', fileErr)
+          error.value = 'Fehler beim Löschen der zugehörigen Dateien'
+          toast({
+            title: 'Fehler',
+            description: 'Fehler beim Löschen der zugehörigen Dateien',
+            variant: 'destructive',
+          })
+          return false
+        }
+      }
+      
+      // Only proceed to delete the object if file deletion was successful
+      await directus.request(
+        deleteItem('objekt', objectId)
+      )
+      
+      // Remove from local state
+      objects.value = objects.value.filter(item => item.id !== objectId)
+      
+      return true
+    } catch (err) {
+      console.error('Error deleting object:', err)
+      error.value = 'Fehler beim Löschen des Objekts'
+      toast({
+        title: 'Fehler',
+        description: 'Fehler beim Löschen des Objekts',
+        variant: 'destructive',
+      })
+      return false
+    }
+  }
+  
+  // Get field options from Directus
+  const getFieldOptions = async (fieldName: string) => {
+    try {
+      const fieldResponse = await directus.request(
+        readField("objekt", fieldName)
+      );
+      
+      if (fieldResponse.meta?.options?.choices) {
+        return {
+          options: fieldResponse.meta.options.choices,
+          error: null
+        };
+      }
+      
+      return {
+        options: [],
+        error: null
+      };
+    } catch (error) {
+      console.error(`Error fetching ${fieldName} options:`, error);
+      toast({
+        title: 'Fehler',
+        description: `Fehler beim Laden der ${fieldName}-Optionen.`,
+        variant: 'destructive',
+      })
+      return {
+        options: [],
+        error: `Fehler beim Laden der ${fieldName}-Optionen.`,
+        variant: 'destructive',
+      };
+    }
+  }
+
+  // Helper function to build a lookup dictionary for hierarchical fields
+  const buildCategoryLookup = (options: any[]) => {
+    const lookup: Record<string, string> = {}
+
+    function processOption(option: any) {
+      lookup[option.value] = option.text
+      if (option.children && option.children.length > 0) {
+        option.children.forEach(processOption)
+      }
+    }
+
+    options.forEach(processOption)
+    return lookup
+  }
+  
   return {
     objects,
     isLoading,
@@ -168,6 +305,9 @@ export function useObjects() {
     pageSize,
     searchQuery,
     fetchObjects,
-    updateObjectField
+    updateObjectField,
+    getFieldOptions,
+    buildCategoryLookup,
+    deleteObject
   }
 } 

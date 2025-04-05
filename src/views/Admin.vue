@@ -7,26 +7,27 @@
       {{ error }}
     </div>
 
-    <!-- Loading state -->
-    <div v-if="isLoading" class="flex justify-center items-center py-8">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-    </div>
-
     <ObjectTable :table="table" :columns="columns" :get-file-type="getFileType" :get-file-name="getFileName"
       :get-image-thumbnail-url="getImageThumbnailWithToken" :open-asset-url="openAssetUrl"
-      @update-anmerkung="updateAnmerkung" @update-bewertung="updateBewertung">
+      @update-anmerkung="updateAnmerkung" @update-bewertung="updateBewertung" @update-categories="updateCategories"
+      @delete-object="deleteObject">
       <template #search-bar>
         <!-- Search bar -->
-        <div class="flex items-center w-full max-w-md">
+        <div class="flex items-center w-full max-w-md gap-2">
           <input v-model="searchQuery" type="text" placeholder="Suche nach Objekten..."
             class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 flex-grow"
             @input="debouncedSearch" />
+          <!-- Loading state -->
+          <div v-if="isLoading" class="flex justify-center items-center">
+            <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+          </div>
         </div>
       </template>
       <template #expanded-row="{ row }">
         <ObjectDetails :object="row.original" :get-file-type="getFileType" :get-file-name="getFileName"
           :get-image-thumbnail-url="getImageThumbnailWithToken" :open-asset-url="openAssetUrl"
-          @update-anmerkung="updateAnmerkung" @update-bewertung="updateBewertung" />
+          @update-anmerkung="updateAnmerkung" @update-bewertung="updateBewertung" @update-categories="updateCategories"
+          @delete-object="deleteObject" />
       </template>
     </ObjectTable>
   </div>
@@ -86,7 +87,8 @@ const {
   currentPage,
   pageSize,
   fetchObjects,
-  updateObjectField
+  updateObjectField,
+  deleteObject: deleteObjectFromDb
 } = useObjects()
 
 // Search state
@@ -183,14 +185,52 @@ const updateAnmerkung = async (objekt: ItemsObjekt, value: string) => {
   }
 }
 
-const updateBewertung = async (objekt: ItemsObjekt, value: number) => {
+const updateBewertung = async (objekt: ItemsObjekt, value: number, label: string) => {
   if (objekt.id) {
     const success = await updateObjectField(objekt.id, 'bewertung', value)
 
     if (success) {
       toast({
         title: 'Bewertung gespeichert',
-        description: `Objekt ${objekt.name} wurde mit der Bewertung ${value} gespeichert`,
+        description: `Objekt ${objekt.name} wurde mit der Bewertung ${label} gespeichert`,
+        variant: 'success',
+      })
+    }
+  }
+}
+
+const updateCategories = async (objekt: ItemsObjekt, categories: string[]) => {
+  if (objekt.id) {
+    const success = await updateObjectField(objekt.id, 'kategorie', categories)
+
+    if (success) {
+      toast({
+        title: 'Kategorien gespeichert',
+        description: `Kategorien für ${objekt.name} wurden aktualisiert`,
+        variant: 'success',
+      })
+    }
+  }
+}
+
+const deleteObject = async (objekt: ItemsObjekt) => {
+  if (objekt.id) {
+    const success = await deleteObjectFromDb(objekt.id)
+
+    if (success) {
+      toast({
+        title: 'Objekt gelöscht',
+        description: `Objekt ${objekt.name} wurde erfolgreich gelöscht`,
+        variant: 'success',
+      })
+
+      // Refresh the object list after deletion
+      fetchObjects({
+        page: currentPage.value,
+        query: searchQuery.value,
+        sortBy: sorting.value.length > 0
+          ? sorting.value.map(s => `${s.desc ? '-' : ''}${s.id}`)
+          : ['name']
       })
     }
   }

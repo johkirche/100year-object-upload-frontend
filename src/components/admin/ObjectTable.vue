@@ -5,19 +5,15 @@
       <DropdownMenu>
         <DropdownMenuTrigger as-child>
           <Button variant="outline" class="ml-auto">
-            Spalten <ChevronDown class="ml-2 h-4 w-4" />
+            Spalten
+            <ChevronDown class="ml-2 h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuCheckboxItem
-            v-for="column in table.getAllColumns().filter((column: any) => column.getCanHide())"
-            :key="column.id"
-            class="capitalize"
-            :model-value="column.getIsVisible()"
-            @update:model-value="(value: boolean) => {
+          <DropdownMenuCheckboxItem v-for="column in table.getAllColumns().filter((column: any) => column.getCanHide())"
+            :key="column.id" class="capitalize" :model-value="column.getIsVisible()" @update:model-value="(value: boolean) => {
               column.toggleVisibility(!!value)
-            }"
-          >
+            }">
             {{ column.id }}
           </DropdownMenuCheckboxItem>
         </DropdownMenuContent>
@@ -28,7 +24,8 @@
         <TableHeader>
           <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
             <TableHead v-for="header in headerGroup.headers" :key="header.id">
-              <FlexRender v-if="!header.isPlaceholder" :render="header.column.columnDef.header" :props="header.getContext()" />
+              <FlexRender v-if="!header.isPlaceholder" :render="header.column.columnDef.header"
+                :props="header.getContext()" />
             </TableHead>
           </TableRow>
         </TableHeader>
@@ -42,22 +39,16 @@
               </TableRow>
               <TableRow v-if="row.getIsExpanded()">
                 <TableCell :colspan="row.getAllCells().length">
-                  <slot 
-                    name="expanded-row" 
-                    :row="row" 
-                    :update-anmerkung="updateAnmerkung" 
-                    :update-bewertung="updateBewertung"
-                  />
+                  <slot name="expanded-row" :row="row" :update-anmerkung="updateAnmerkung"
+                    :update-bewertung="updateBewertung" :update-categories="updateCategories"
+                    :delete-object="deleteObject" />
                 </TableCell>
               </TableRow>
             </template>
           </template>
 
           <TableRow v-else>
-            <TableCell
-              :colspan="columns.length"
-              class="h-24 text-center"
-            >
+            <TableCell :colspan="columns.length" class="h-24 text-center">
               Keine Ergebnisse.
             </TableCell>
           </TableRow>
@@ -67,20 +58,10 @@
 
     <div class="flex items-center justify-end space-x-2 py-4">
       <div class="space-x-2">
-        <Button
-          variant="outline"
-          size="sm"
-          :disabled="!table.getCanPreviousPage()"
-          @click="table.previousPage()"
-        >
+        <Button variant="outline" size="sm" :disabled="!table.getCanPreviousPage()" @click="table.previousPage()">
           Vorherige
         </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          :disabled="!table.getCanNextPage()"
-          @click="table.nextPage()"
-        >
+        <Button variant="outline" size="sm" :disabled="!table.getCanNextPage()" @click="table.nextPage()">
           Nächste
         </Button>
       </div>
@@ -121,15 +102,25 @@ defineProps<{
 }>()
 
 const emit = defineEmits<{
-  'updateAnmerkung': [objekt: ItemsObjekt, value: string],
-  'updateBewertung': [objekt: ItemsObjekt, value: number]
+  'update-anmerkung': [objekt: ItemsObjekt, value: string],
+  'update-bewertung': [objekt: ItemsObjekt, value: number, label: string],
+  'update-categories': [objekt: ItemsObjekt, categories: string[]],
+  'delete-object': [objekt: ItemsObjekt]
 }>()
 
 const updateAnmerkung = (objekt: ItemsObjekt, value: string) => {
-  emit('updateAnmerkung', objekt, value)
+  emit('update-anmerkung', objekt, value)
 }
 
-const updateBewertung = (objekt: ItemsObjekt, value: number) => {
-  emit('updateBewertung', objekt, value)
+const updateBewertung = (objekt: ItemsObjekt, value: number, label: string) => {
+  emit('update-bewertung', objekt, value, label)
 }
-</script> 
+
+const updateCategories = (objekt: ItemsObjekt, categories: string[]) => {
+  emit('update-categories', objekt, categories)
+}
+
+const deleteObject = (objekt: ItemsObjekt) => {
+  emit('delete-object', objekt)
+}
+</script>

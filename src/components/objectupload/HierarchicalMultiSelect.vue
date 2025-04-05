@@ -7,6 +7,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command'
 import { Checkbox } from '@/components/ui/checkbox'
 
+import { useObjects } from '@/composables/useObjects'
+
 interface Option {
     value: string;
     text: string;
@@ -36,6 +38,8 @@ const selectedValues = computed({
     get: () => props.modelValue,
     set: (value: string[]) => emit('update:modelValue', value)
 })
+
+const { buildCategoryLookup } = useObjects()
 
 // Check if parent is checked (all children are selected)
 const isParentChecked = (option: Option): boolean => {
@@ -76,6 +80,19 @@ const toggleChild = (child: Option): void => {
 
     selectedValues.value = updatedValues
 }
+
+const formattedCategories = computed(() => {
+    if (!props.modelValue || !Array.isArray(props.modelValue) || props.modelValue.length === 0) {
+        return 'Keine Kategorien'
+    }
+
+    const categoryLookup = buildCategoryLookup(props.options)
+
+    return props.modelValue
+        .map((cat: string) => categoryLookup[cat] || cat)
+        .join(', ')
+})
+
 </script>
 
 <template>
@@ -87,7 +104,7 @@ const toggleChild = (child: Option): void => {
                         {{ placeholder }}
                     </span>
                     <span v-else class="truncate">
-                        {{ selectedValues.length }} ausgewählt
+                        {{ formattedCategories }}
                     </span>
                     <ChevronDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
@@ -100,11 +117,9 @@ const toggleChild = (child: Option): void => {
                         <div v-for="option in options" :key="option.value">
                             <CommandItem :value="option.text" class="p-0">
                                 <div class="flex items-center space-x-2 p-2 w-full">
-                                    <Checkbox
-:id="option.value" :model-value="isParentChecked(option)"
+                                    <Checkbox :id="option.value" :model-value="isParentChecked(option)"
                                         @update:model-value="toggleParent(option)" />
-                                    <label
-:for="option.value"
+                                    <label :for="option.value"
                                         class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer w-full">
                                         {{ option.text }}
                                     </label>
@@ -113,15 +128,12 @@ const toggleChild = (child: Option): void => {
 
                             <!-- Render children if they exist -->
                             <div v-if="option.children && option.children.length > 0" class="ml-6">
-                                <CommandItem
-v-for="child in option.children" :key="child.value" :value="child.text"
+                                <CommandItem v-for="child in option.children" :key="child.value" :value="child.text"
                                     class="p-0">
                                     <div class="flex items-center space-x-2 p-2 w-full">
-                                        <Checkbox
-:id="child.value" :model-value="isChildChecked(child)"
+                                        <Checkbox :id="child.value" :model-value="isChildChecked(child)"
                                             @update:model-value="toggleChild(child)" />
-                                        <label
-:for="child.value"
+                                        <label :for="child.value"
                                             class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer w-full">
                                             {{ child.text }}
                                         </label>
