@@ -68,17 +68,17 @@ function isFileSizeValid(file: File): boolean {
 function handleFilesAdded(files: File[]) {
   // Reset previous file size errors
   fileSizeError.value = null
-  
+
   // Filter out files that exceed the size limit
   const oversizedFiles = files.filter(file => !isFileSizeValid(file))
   const validFiles = files.filter(file => isFileSizeValid(file))
-  
+
   // Display error for oversized files
   if (oversizedFiles.length > 0) {
     const fileNames = oversizedFiles.map(f => `"${f.name}" (${formatFileSize(f.size)})`).join(', ')
     fileSizeError.value = `Folgende Dateien überschreiten das Limit von ${formatFileSize(props.maxFileSize)}: ${fileNames}`
   }
-  
+
   // Only process valid files
   const newFiles: FileItem[] = validFiles.map(file => {
     const isImage = isImageFile(file)
@@ -91,9 +91,9 @@ function handleFilesAdded(files: File[]) {
       isImage
     }
   })
-  
+
   const updatedFiles = [...props.modelValue, ...newFiles]
-  
+
   // Only set the first image as main if there are no files yet
   if (props.modelValue.length === 0 && newFiles.length > 0) {
     // Find the first image file
@@ -102,9 +102,9 @@ function handleFilesAdded(files: File[]) {
       firstImageFile.isMain = true
     }
   }
-  
+
   emit('update:modelValue', updatedFiles)
-  
+
   // Clear any previous error when new files are added
   if (props.error && updatedFiles.some(file => file.isMain)) {
     emit('error', null)
@@ -119,11 +119,11 @@ function removeFile(index: number) {
       // Revoke object URL to prevent memory leaks
       URL.revokeObjectURL(file.preview)
     }
-    
+
     const wasMain = file?.isMain || false
     const updatedFiles = [...props.modelValue]
     updatedFiles.splice(index, 1)
-    
+
     // If the main file was removed, set the first remaining image as main
     if (wasMain && updatedFiles.length > 0) {
       const firstImage = updatedFiles.find(f => f.isImage)
@@ -131,7 +131,7 @@ function removeFile(index: number) {
         firstImage.isMain = true
       }
     }
-    
+
     emit('update:modelValue', updatedFiles)
   }
 }
@@ -140,28 +140,28 @@ function removeFile(index: number) {
 function setAsMainFile(index: number) {
   if (index >= 0 && index < props.modelValue.length) {
     const selectedFile = props.modelValue[index]
-    
+
     // Only images can be set as main
     if (!selectedFile || !selectedFile.isImage) {
       emit('error', 'Nur Bilder können als Hauptbild festgelegt werden')
       return
     }
-    
+
     const updatedFiles = [...props.modelValue]
-    
+
     // Set all files to not main
     updatedFiles.forEach(file => {
       if (file) {
         file.isMain = false
       }
     })
-    
+
     // Set the selected image as main
     selectedFile.isMain = true
     updatedFiles[index] = selectedFile
-    
+
     emit('update:modelValue', updatedFiles)
-    
+
     // Clear any previous error when a main image is selected
     if (props.error) {
       emit('error', null)
@@ -174,17 +174,17 @@ function setAsMainFile(index: number) {
 async function uploadSingleFile(fileItem: FileItem, title: string): Promise<string> {
   const file = fileItem.file
   const index = props.modelValue.findIndex(f => f === fileItem)
-  
+
   if (!file || index === -1) {
     throw new Error('Invalid file')
   }
-  
+
   // Create formData for this single file
   const formData = new FormData()
   formData.append('folder', import.meta.env.VITE_FILE_FOLDER)
   formData.append('title', title)
   formData.append('file', file)
-  
+
   // Get the authentication token
   const token = await getAuthToken()
   if (!token) {
@@ -195,19 +195,19 @@ async function uploadSingleFile(fileItem: FileItem, title: string): Promise<stri
   const MAX_RETRIES = 3
   // Base delay for exponential backoff (in ms)
   const BASE_DELAY = 1000
-  
+
   // Setup retry logic with exponential backoff
   return new Promise<string>((resolve, reject) => {
     let attempt = 0
-    
+
     function attemptUpload() {
       const xhr = new XMLHttpRequest()
-      
+
       // Track upload progress
       xhr.upload.addEventListener('progress', (event) => {
         if (event.lengthComputable) {
           const percentComplete = Math.round((event.loaded / event.total) * 100)
-          
+
           // Update progress for this specific file
           const updatedFiles = [...props.modelValue]
           if (updatedFiles[index]) {
@@ -216,12 +216,12 @@ async function uploadSingleFile(fileItem: FileItem, title: string): Promise<stri
           }
         }
       })
-      
-      xhr.onload = function() {
+
+      xhr.onload = function () {
         if (xhr.status >= 200 && xhr.status < 300) {
           try {
             const response = JSON.parse(xhr.responseText)
-            
+
             // Update the file with uploaded status
             const updatedFiles = [...props.modelValue]
             if (updatedFiles[index]) {
@@ -229,7 +229,7 @@ async function uploadSingleFile(fileItem: FileItem, title: string): Promise<stri
               updatedFiles[index].id = response.data.id
               emit('update:modelValue', updatedFiles)
             }
-            
+
             resolve(response.data.id)
           } catch (error) {
             handleError('Error parsing response')
@@ -238,59 +238,59 @@ async function uploadSingleFile(fileItem: FileItem, title: string): Promise<stri
           handleError(`HTTP Error: ${xhr.status}`)
         }
       }
-      
-      xhr.onerror = function() {
+
+      xhr.onerror = function () {
         handleError('Network error')
       }
 
-      xhr.ontimeout = function() {
+      xhr.ontimeout = function () {
         handleError('Connection timed out')
       }
-      
-      xhr.onabort = function() {
+
+      xhr.onabort = function () {
         handleError('Upload aborted')
       }
 
       function handleError(errorMsg: string) {
         console.warn(`Upload attempt ${attempt + 1}/${MAX_RETRIES} failed: ${errorMsg}`)
-        
+
         if (attempt < MAX_RETRIES - 1) {
           attempt++
           // Exponential backoff: delay increases with each retry
           const delay = BASE_DELAY * Math.pow(2, attempt - 1)
           console.log(`Retrying upload in ${delay}ms...`)
-          
+
           // Update UI to show retry status
           const updatedFiles = [...props.modelValue]
           if (updatedFiles[index]) {
             updatedFiles[index].progress = 0
             emit('update:modelValue', updatedFiles)
           }
-          
+
           setTimeout(attemptUpload, delay)
         } else {
           reject(new Error(`Fehler beim Hochladen nach ${MAX_RETRIES} Versuchen: ${errorMsg}`))
         }
       }
-      
+
       const isDev = import.meta.env.DEV
-      const DIRECTUS_URL = isDev 
-        ? window.location.origin + '/directus/files' 
+      const DIRECTUS_URL = isDev
+        ? window.location.origin + '/directus/files'
         : `${import.meta.env.VITE_DIRECTUS_URL}/files`
 
       xhr.open('POST', DIRECTUS_URL, true)
       xhr.setRequestHeader('Authorization', `Bearer ${token}`)
-      
+
       // Set longer timeout to prevent premature timeouts
       xhr.timeout = 60000 // 60 seconds
-      
+
       try {
         xhr.send(formData)
       } catch (e: unknown) {
         handleError(`Error sending request: ${e instanceof Error ? e.message : String(e)}`)
       }
     }
-    
+
     // Start the first upload attempt
     attemptUpload()
   })
@@ -301,10 +301,10 @@ async function uploadAllFiles(title: string): Promise<{ hauptbildId: string | nu
   try {
     // Start uploading
     isUploading.value = true
-    
+
     // Make a local copy of the files array for safety
     const filesToUpload = [...props.modelValue]
-    
+
     // Early return if no files and files are optional
     if (filesToUpload.length === 0) {
       if (props.filesOptional) {
@@ -313,16 +313,16 @@ async function uploadAllFiles(title: string): Promise<{ hauptbildId: string | nu
         throw new Error('Bitte wählen Sie mindestens ein Bild aus')
       }
     }
-    
+
     // Check if there's at least one image marked as main (only required if not optional)
     const mainImageFile = filesToUpload.find(f => f.isMain && f.isImage)
     if (!mainImageFile && !props.filesOptional && filesToUpload.some(f => f.isImage)) {
       throw new Error('Bitte wählen Sie ein Hauptbild aus')
     }
-    
+
     let hauptbildId: string | null = null;
     let additionalFileIds: string[] = [];
-    
+
     // First upload the main image with better error handling
     try {
       // If there's no main image (only possible when files are optional),
@@ -337,10 +337,10 @@ async function uploadAllFiles(title: string): Promise<{ hauptbildId: string | nu
       console.error('Error uploading main image:', error)
       throw new Error(error instanceof Error ? error.message : 'Fehler beim Hochladen des Hauptbildes')
     }
-    
+
     // Then upload any additional files with better error handling
     const additionalFiles = filesToUpload.filter(file => !file.isMain)
-    
+
     // Use Promise.allSettled to continue even if some files fail
     const uploadPromises = additionalFiles.map(async (file, i) => {
       if (file) {
@@ -350,27 +350,27 @@ async function uploadAllFiles(title: string): Promise<{ hauptbildId: string | nu
           const additionalTitle = `Weiteres ${fileType} ${index}: ${title}`
           return await uploadSingleFile(file, additionalTitle)
         } catch (error: unknown) {
-          console.error(`Error uploading additional file ${i+1}:`, error)
+          console.error(`Error uploading additional file ${i + 1}:`, error)
           throw error
         }
       }
       return null
     })
-    
+
     const results = await Promise.allSettled(uploadPromises)
-    
+
     // Filter out successful uploads
     additionalFileIds = results
-      .filter((result): result is PromiseFulfilledResult<string> => 
+      .filter((result): result is PromiseFulfilledResult<string> =>
         result.status === 'fulfilled' && result.value !== null)
       .map(result => result.value)
-    
+
     // Warn about failed uploads
     const failedUploads = results.filter(result => result.status === 'rejected')
     if (failedUploads.length > 0) {
       console.warn(`${failedUploads.length} additional files failed to upload`)
     }
-    
+
     return {
       hauptbildId,
       additionalFileIds
@@ -397,10 +397,6 @@ defineExpose({
 
     <!-- Upload Area (Hide based on new prop) -->
     <div v-if="!props.disableUploadArea">
-      <h2 class="text-lg font-semibold mb-2">
-        Dateien hochladen <span v-if="!props.filesOptional">(mind. 1 Bild erforderlich)</span>
-        <span v-else>(optional)</span>
-      </h2>
       <ImageDropzone :disabled="isUploading" :accept-all-files="true" @files-added="handleFilesAdded" />
       <p class="mt-2 text-sm text-gray-500">
         <template v-if="!props.filesOptional">
@@ -412,40 +408,33 @@ defineExpose({
         Maximale Dateigröße: {{ formatFileSize(props.maxFileSize) }}
       </p>
     </div>
-    
+
     <!-- File Size Error Alert -->
     <Alert v-if="fileSizeError" variant="destructive" class="mt-4 relative">
-      <button 
-        type="button"
-        class="absolute right-2 top-2 p-1 rounded-full hover:border-red-500"
-        aria-label="Dismiss"
-        @click="clearFileSizeError"
-      >
+      <button type="button" class="absolute right-2 top-2 p-1 rounded-full hover:border-red-500" aria-label="Dismiss"
+        @click="clearFileSizeError">
         <X class="h-4 w-4" />
       </button>
       <AlertTitle>{{ fileSizeError }}</AlertTitle>
     </Alert>
-    
+
     <!-- Display Error if any -->
     <div v-if="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded my-6">
       {{ error }}
     </div>
-    
+
     <!-- File Preview Section -->
     <div v-if="modelValue.length > 0" class="mb-6">
       <h3 class="text-md font-medium mb-2">Ausgewählte Dateien:</h3>
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         <div v-for="(fileItem, index) in modelValue" :key="index" class="relative border rounded p-2">
           <!-- X icon in top right corner -->
-          <button 
-            type="button"
+          <button type="button"
             class="absolute -right-2 -top-2 bg-white rounded-full border border-gray-300 p-1 shadow-sm hover:bg-gray-100 hover:text-red-500"
-            :disabled="isUploading"
-            @click="removeFile(index)"
-          >
+            :disabled="isUploading" @click="removeFile(index)">
             <X class="h-4 w-4" />
           </button>
-          
+
           <!-- Display preview for images or file icon for non-images -->
           <div v-if="fileItem.isImage && fileItem.preview" class="h-64 flex items-center justify-center">
             <img :src="fileItem.preview" class="h-full w-full object-cover rounded mb-2" />
@@ -455,27 +444,24 @@ defineExpose({
             <p class="mt-2 text-xs text-gray-600 text-center break-all">{{ fileItem.file.name }}</p>
             <p class="text-xs text-gray-500">{{ Math.round(fileItem.file.size / 1024) }} KB</p>
           </div>
-          
+
           <!-- Upload progress indicator -->
           <div v-if="isUploading && fileItem.progress !== undefined && fileItem.progress < 100" class="mt-2">
             <Progress v-model="fileItem.progress" class="w-full h-2" />
             <p class="text-xs text-gray-500 mt-1">Hochladen: {{ fileItem.progress }}%</p>
           </div>
-          
+
           <!-- Uploaded indicator -->
           <div v-else-if="fileItem.uploaded" class="text-xs text-green-600 mt-1">
             Hochgeladen ✓
           </div>
-          
+
           <!-- Main image checkbox (only enabled for images) -->
           <div class="flex items-center space-x-2 mt-2">
-            <Checkbox 
-              :id="`main-file-${index}`"
-              v-model="fileItem.isMain" 
-              :disabled="isUploading || !fileItem.isImage"
-              @update:checked="() => setAsMainFile(index)"
-            />
-            <label :for="`main-file-${index}`" class="text-sm font-medium leading-none" :class="{ 'text-gray-400': !fileItem.isImage }">
+            <Checkbox :id="`main-file-${index}`" v-model="fileItem.isMain" :disabled="isUploading || !fileItem.isImage"
+              @update:checked="() => setAsMainFile(index)" />
+            <label :for="`main-file-${index}`" class="text-sm font-medium leading-none"
+              :class="{ 'text-gray-400': !fileItem.isImage }">
               Hauptbild
               <span v-if="!fileItem.isImage" class="text-xs">(nur für Bilder)</span>
             </label>
@@ -488,4 +474,4 @@ defineExpose({
 
 <style scoped>
 /* Styles remain unchanged */
-</style> 
+</style>

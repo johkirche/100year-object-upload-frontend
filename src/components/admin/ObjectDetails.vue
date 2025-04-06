@@ -249,9 +249,7 @@
 </template>
 
 <script setup lang="ts">
-import type { ItemsObjekt } from '@/client/types.gen'
-import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
+import { ref, computed, onMounted } from 'vue'
 import {
     FileText,
     File,
@@ -265,9 +263,14 @@ import {
     Trash2,
     Loader2
 } from 'lucide-vue-next'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
-import { ref, computed, onMounted } from 'vue'
+import type { ItemsObjekt } from '@/client/types.gen'
+
 import { useObjects } from '@/composables/useObjects'
+
+import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
+
 import HierarchicalMultiSelect from '@/components/objectupload/HierarchicalMultiSelect.vue'
 
 const props = defineProps<{

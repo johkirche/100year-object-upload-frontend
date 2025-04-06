@@ -142,6 +142,13 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   /**
+   * Clears the error message
+   */
+  function clearError(): void {
+    error.value = null
+  }
+
+  /**
    * Handles user login
    */
   async function login(username: string, password: string): Promise<boolean> {
@@ -158,7 +165,7 @@ export const useAuthStore = defineStore('auth', () => {
 
       return true
     } catch (err) {
-      error.value = 'Invalid username or password'
+      error.value = 'Ungültiger Benutzername oder Passwort'
       console.error('Login error:', err)
       return false
     } finally {
@@ -214,6 +221,7 @@ export const useAuthStore = defineStore('auth', () => {
     logout,
     getClient,
     initAuth,
-    getAuthToken
+    getAuthToken,
+    clearError
   }
 }) 

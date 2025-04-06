@@ -1,14 +1,14 @@
 <template>
-  <div class="w-full">
-    <h2 class="text-xl font-semibold mb-4">Suche nach ähnlichen Objekten</h2>
+  <div class="w-full relative">
+    <h2 class="text-xl font-semibold mb-2">Suche nach ähnlichen Objekten</h2>
 
-    <!-- Search input -->
-    <div class="mb-2">
-      <input v-model="searchQuery" type="text" placeholder="Nach ähnlichen Objekten suchen..."
-        class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+    <!-- Sticky search bar container -->
+    <div class="sticky top-0 bg-background/95 backdrop-blur-sm z-20 py-2">
+      <Input v-model="searchQuery" type="text" placeholder="Nach ähnlichen Objekten suchen..."
         @input="debouncedSearch" />
     </div>
 
+    <!-- Rest of the content with proper spacing -->
     <div class="text-sm text-muted-foreground mb-4">
       <p>
         Wir bitten dich nach deinem Vorschlag im Objektkatalog zu suchen um doppelte Objekte zu vermeiden.
@@ -41,7 +41,7 @@
       </div>
     </div>
 
-    <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+    <div v-else class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-4">
       <div v-for="object in objects" :key="object.id"
         class="border rounded-md overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer"
         :class="{ 'ring-2 ring-primary': selectedObject?.id === object.id }" @click="selectObject(object)">
@@ -64,19 +64,22 @@
       </div>
     </div>
 
-    <!-- Pagination -->
-    <div v-if="totalPages > 1" class="flex justify-center mt-6 space-x-2">
-      <button :disabled="currentPage <= 1" class="px-3 py-1 border rounded disabled:opacity-50"
-        @click="changePage(currentPage - 1)">
-        Zurück
+    <!-- Infinite scroll trigger -->
+    <div v-if="objects.length > 0 && canLoadMore" ref="loadMoreTrigger"
+      class="h-10 flex items-center justify-center my-4">
+      <div v-if="isLoading" class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+      <button v-else-if="currentPage < totalPages"
+        class="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90" @click="loadMore">
+        Mehr laden
       </button>
+      <div v-else class="text-sm text-muted-foreground">
+        Alle Objekte geladen
+      </div>
+    </div>
 
-      <span class="px-3 py-1">Seite {{ currentPage }} von {{ totalPages }}</span>
-
-      <button :disabled="currentPage >= totalPages" class="px-3 py-1 border rounded disabled:opacity-50"
-        @click="changePage(currentPage + 1)">
-        Weiter
-      </button>
+    <!-- Pagination info -->
+    <div v-if="objects.length > 0" class="text-center text-sm text-muted-foreground mt-2">
+      <span>{{ objects.length }} von {{ totalItems }} Objekten angezeigt</span>
     </div>
 
     <!-- Object detail dialog -->
@@ -114,7 +117,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { X } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 
@@ -122,6 +125,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { useAuthStore } from '@/stores/auth'
 
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { getImageThumbnailUrl } from '@/components/admin/FileHelpers'
 
 import { useObjects } from '@/composables/useObjects'
@@ -131,6 +135,10 @@ const props = defineProps({
   initialQuery: {
     type: String,
     default: ''
+  },
+  itemsPerPage: {
+    type: Number,
+    default: 10
   }
 })
 
@@ -139,10 +147,15 @@ const {
   objects,
   isLoading,
   error,
+  totalItems,
   totalPages,
   currentPage,
+  pageSize,
   fetchObjects
 } = useObjects()
+
+// Set the page size from props
+pageSize.value = props.itemsPerPage
 
 // Internal state
 const searchQuery = ref(props.initialQuery)
@@ -152,6 +165,11 @@ const token = ref('')
 const selectedObject = ref<any>(null)
 const isDialogOpen = ref(false)
 const router = useRouter()
+
+// Infinite scroll
+const loadMoreTrigger = ref<HTMLElement | null>(null)
+const observer = ref<IntersectionObserver | null>(null)
+const canLoadMore = ref(true)
 
 // Select an object to show in the dialog
 const selectObject = (object: any) => {
@@ -185,11 +203,15 @@ const debouncedSearch = () => {
 }
 
 // Search function
-const search = () => {
-  fetchObjects({
+const search = async () => {
+  // Reset canLoadMore when starting a new search
+  canLoadMore.value = true
+
+  await fetchObjects({
     page: 1,
     query: searchQuery.value,
-    fields: limitedFields
+    fields: limitedFields,
+    itemsPerPage: props.itemsPerPage
   })
 }
 
@@ -201,14 +223,24 @@ const limitedFields = [
   'abbildung.*'
 ]
 
-// Change page
-const changePage = (page: number) => {
-  if (page < 1 || page > totalPages.value) return
 
-  fetchObjects({
-    page,
+// Load more objects (for infinite scroll)
+const loadMore = async () => {
+  if (isLoading.value || !canLoadMore.value) return
+
+  // If we're already at the last page, don't try to load more
+  if (currentPage.value >= totalPages.value) {
+    canLoadMore.value = false
+    return
+  }
+
+  // Load the next page and append to existing objects
+  await fetchObjects({
+    page: currentPage.value + 1,
     query: searchQuery.value,
-    fields: limitedFields
+    fields: limitedFields,
+    itemsPerPage: props.itemsPerPage,
+    append: true
   })
 }
 
@@ -223,17 +255,44 @@ onMounted(async () => {
 
     // Initial search if query is provided
     if (searchQuery.value) {
-      search()
+      await search()
     } else {
       // Otherwise fetch first page
-      fetchObjects({ fields: limitedFields })
+      await fetchObjects({
+        fields: limitedFields,
+        itemsPerPage: props.itemsPerPage
+      })
     }
+
+    // Set up intersection observer for infinite scroll
+    nextTick(async () => {
+      console.log('Setting up intersection observer')
+      console.log(loadMoreTrigger.value)
+      if ('IntersectionObserver' in window && loadMoreTrigger.value) {
+        observer.value = new IntersectionObserver(async (entries) => {
+          const [entry] = entries
+          if (entry && entry.isIntersecting && !isLoading.value) {
+            await loadMore()
+          }
+        }, {
+          rootMargin: '100px' // Load more when element is 100px from viewport
+        })
+
+        observer.value.observe(loadMoreTrigger.value)
+      }
+    })
   }
 })
 
 onBeforeUnmount(() => {
+  // Clear search timeout
   if (searchTimeout.value !== null) {
     clearTimeout(searchTimeout.value)
+  }
+
+  // Disconnect intersection observer
+  if (observer.value) {
+    observer.value.disconnect()
   }
 })
 </script>

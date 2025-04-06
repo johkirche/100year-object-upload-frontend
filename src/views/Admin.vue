@@ -14,8 +14,7 @@
       <template #search-bar>
         <!-- Search bar -->
         <div class="flex items-center w-full max-w-md gap-2">
-          <input v-model="searchQuery" type="text" placeholder="Suche nach Objekten..."
-            class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 flex-grow"
+          <Input v-model="searchQuery" type="text" placeholder="Suche nach Objekten..." class="flex-grow"
             @input="debouncedSearch" />
           <!-- Loading state -->
           <div v-if="isLoading" class="flex justify-center items-center">
@@ -34,6 +33,8 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted, watch, onBeforeUnmount } from 'vue'
+
 import type {
   ColumnFiltersState,
   ExpandedState,
@@ -48,17 +49,19 @@ import {
   getSortedRowModel,
   useVueTable,
 } from '@tanstack/vue-table'
-
-import { ref, onMounted, watch } from 'vue'
 import type { ItemsObjekt } from '@/client/types.gen'
-import { useAuthStore } from '@/stores/auth'
+
 import { useToast } from '@/components/ui/toast/use-toast'
+import { useAuthStore } from '@/stores/auth'
+import { useObjects } from '@/composables/useObjects'
+
+
+import { Input } from '@/components/ui/input'
+
+import { getFileType, getFileName, getImageThumbnailUrl, getAssetUrl } from '@/components/admin/FileHelpers'
+import { createColumns } from '@/components/admin/TableColumns'
 import ObjectTable from '@/components/admin/ObjectTable.vue'
 import ObjectDetails from '@/components/admin/ObjectDetails.vue'
-import { createColumns } from '@/components/admin/TableColumns'
-import { getFileType, getFileName, getImageThumbnailUrl, getAssetUrl } from '@/components/admin/FileHelpers'
-import { useObjects } from '@/composables/useObjects'
-import { onBeforeUnmount } from 'vue'
 
 // Use the Directus client from the auth store
 const authStore = useAuthStore()

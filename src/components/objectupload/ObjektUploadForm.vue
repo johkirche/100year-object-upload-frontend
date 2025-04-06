@@ -403,7 +403,7 @@ onMounted(async () => {
 
         <!-- Success Card (shown after submission) -->
         <Card v-if="submittedValues && (isUploading || uploadSuccess)">
-            <CardHeader>
+            <CardHeader class="px-3 md:px-6">
                 <CardTitle>
                     <template v-if="isUploading">
                         <span v-if="submissionType === 'object'">Objekt wird hochgeladen...</span>
@@ -420,7 +420,7 @@ onMounted(async () => {
                     </p>
                 </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent class="px-3 md:px-6">
                 <!-- Display Summary Data -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                     <div><strong>Name:</strong> {{ submittedValues.name }}</div>
@@ -484,7 +484,7 @@ onMounted(async () => {
                     </Button>
                 </div>
             </CardContent>
-            <CardFooter>
+            <CardFooter class="px-3 md:px-6">
                 <Button @click="startNewUpload">Neuen Eintrag erstellen</Button>
             </CardFooter>
         </Card>
@@ -495,17 +495,23 @@ onMounted(async () => {
             <div v-if="currentStep !== 'type-selection'" class="mb-6">
                 <div class="flex justify-between">
                     <div class="text-sm font-medium">
-                        <span class="text-gray-400">1. Auswahl</span>
+                        <span class="text-gray-400">
+                            1. Auswahl
+                        </span>
                     </div>
                     <div class="text-sm font-medium">
                         <span
-                            :class="{ 'text-primary': currentStep === 'object-info', 'text-gray-400': currentStep !== 'object-info' }">2.
-                            Objektinformationen</span>
+                            :class="{ 'text-primary': currentStep === 'object-info', 'text-gray-400': currentStep !== 'object-info' }">
+                            <span class="hidden md:inline">2. Objektinformationen</span>
+                            <span class="md:hidden">2. Objekt</span>
+                        </span>
                     </div>
                     <div class="text-sm font-medium">
                         <span
-                            :class="{ 'text-primary': currentStep === 'submitter-info', 'text-gray-400': currentStep !== 'submitter-info' }">3.
-                            Kontaktinformationen</span>
+                            :class="{ 'text-primary': currentStep === 'submitter-info', 'text-gray-400': currentStep !== 'submitter-info' }">
+                            <span class="hidden md:inline">3. Kontaktinformationen</span>
+                            <span class="md:hidden">3. Kontakt</span>
+                        </span>
                     </div>
                 </div>
                 <div class="w-full bg-gray-200 rounded-full h-2.5 mt-2">
@@ -517,21 +523,21 @@ onMounted(async () => {
 
             <!-- Step 1: Type Selection -->
             <Form v-show="currentStep === 'type-selection'" ref="typeSelectionFormRef"
-                :validation-schema="formValidationSchema" class="space-y-8" @submit="onStepSubmit">
+                :validation-schema="formValidationSchema" class="space-y-8" @submit="onStepSubmit" v-slot="{ meta }">
                 <Card>
-                    <CardHeader>
+                    <CardHeader class="px-3 md:px-6">
                         <CardTitle>Was möchten Sie einreichen?</CardTitle>
                         <CardDescription>
                             Wählen Sie zwischen einem konkreten Objektvorschlag oder einem Ausstellungswunsch
                         </CardDescription>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent class="px-3 md:px-6">
                         <FormField v-slot="{ field, errorMessage }" name="submissionType">
                             <FormItem class="space-y-4">
                                 <FormControl>
                                     <RadioGroup :model-value="field.value" class="grid grid-cols-1 md:grid-cols-2 gap-4"
                                         @update:model-value="field.onChange">
-                                        <div class="flex flex-col p-6 border rounded-md cursor-pointer hover:bg-gray-50"
+                                        <div class="flex flex-col p-4 md:p-6 border rounded-md cursor-pointer hover:bg-gray-50"
                                             :class="{ 'border-primary border-2 shadow-sm': field.value === 'object', 'border-input': field.value !== 'object' }"
                                             @click="field.onChange('object')">
                                             <FormControl>
@@ -549,7 +555,7 @@ onMounted(async () => {
                                             </div>
                                         </div>
 
-                                        <div class="flex flex-col p-6 border rounded-md cursor-pointer hover:bg-gray-50"
+                                        <div class="flex flex-col p-4 md:p-6 border rounded-md cursor-pointer hover:bg-gray-50"
                                             :class="{ 'border-primary border-2 shadow-sm': field.value === 'wish', 'border-input': field.value !== 'wish' }"
                                             @click="field.onChange('wish')">
                                             <FormControl>
@@ -573,8 +579,8 @@ onMounted(async () => {
                                 <FormMessage>{{ errorMessage }}</FormMessage>
                             </FormItem>
 
-                            <CardFooter class="px-0 pb-0 pt-4 justify-end">
-                                <Button type="submit" :disabled="!field.value">
+                            <CardFooter class="pb-0 pt-4 px-3 md:px-6 justify-end">
+                                <Button type="submit" :disabled="!meta.valid">
                                     Weiter
                                     <ArrowRightIcon class="ml-2 h-4 w-4" />
                                 </Button>
@@ -586,9 +592,9 @@ onMounted(async () => {
 
             <!-- Step 2: Object Information -->
             <Form v-show="currentStep === 'object-info'" ref="objectInfoFormRef"
-                :validation-schema="formValidationSchema" class="space-y-8" @submit="onStepSubmit">
+                :validation-schema="formValidationSchema" class="space-y-8" @submit="onStepSubmit" v-slot="{ meta }">
                 <Card>
-                    <CardHeader>
+                    <CardHeader class="px-3 md:px-6">
                         <CardTitle>
                             <span v-if="submissionType === 'object'">Objektinformationen</span>
                             <span v-else>Objektwunsch</span>
@@ -599,7 +605,7 @@ onMounted(async () => {
                             <span v-else>Bitte beschreiben Sie das gewünschte Ausstellungsobjekt</span>
                         </CardDescription>
                     </CardHeader>
-                    <CardContent class="space-y-6">
+                    <CardContent class="space-y-6 px-3 md:px-6">
                         <!-- Name des Objekts -->
                         <FormField v-slot="{ field, errorMessage }" name="name">
                             <FormItem>
@@ -701,12 +707,12 @@ onMounted(async () => {
                                 :files-optional="true" @error="uploadError = $event" />
                         </div>
                     </CardContent>
-                    <CardFooter class="flex justify-between">
+                    <CardFooter class="px-3 md:px-6 flex justify-between">
                         <Button type="button" variant="outline" @click="prevStep">
                             <ArrowLeftIcon class="mr-2 h-4 w-4" />
                             Zurück
                         </Button>
-                        <Button type="submit">
+                        <Button type="submit" :disabled="!meta.valid">
                             Weiter
                             <ArrowRightIcon class="ml-2 h-4 w-4" />
                         </Button>
@@ -716,15 +722,15 @@ onMounted(async () => {
 
             <!-- Step 3: Submitter Information -->
             <Form v-show="currentStep === 'submitter-info'" ref="submitterInfoFormRef"
-                :validation-schema="formValidationSchema" class="space-y-8" @submit="onStepSubmit">
+                :validation-schema="formValidationSchema" class="space-y-8" @submit="onStepSubmit" v-slot="{ meta }">
                 <Card>
-                    <CardHeader>
+                    <CardHeader class="px-3 md:px-6">
                         <CardTitle>Ihre Kontaktinformationen</CardTitle>
                         <CardDescription>
                             Bitte geben Sie Ihre Kontaktdaten an
                         </CardDescription>
                     </CardHeader>
-                    <CardContent class="space-y-6">
+                    <CardContent class="space-y-6 px-3 md:px-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <FormField v-slot="{ field, errorMessage }" name="einreicherName">
                                 <FormItem>
@@ -802,12 +808,12 @@ onMounted(async () => {
                             </FormField>
                         </div>
                     </CardContent>
-                    <CardFooter class="flex justify-between">
+                    <CardFooter class="px-3 md:px-6 flex justify-between">
                         <Button type="button" variant="outline" @click="prevStep">
                             <ArrowLeftIcon class="mr-2 h-4 w-4" />
                             Zurück
                         </Button>
-                        <Button type="submit" :disabled="isUploading">
+                        <Button type="submit" :disabled="!meta.valid || isUploading">
                             <UploadIcon class="w-4 h-4 mr-2" />
                             Absenden
                         </Button>

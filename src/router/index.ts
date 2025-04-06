@@ -42,6 +42,25 @@ const routes: Array<RouteRecordRaw> = [
     path: '/login',
     name: 'Login',
     component: () => import('@/views/Login.vue')
+  },
+  {
+    path: '/autologin',
+    name: 'AutoLogin',
+    component: () => import('@/views/AutoLogin.vue')
+  },
+  {
+    path: '/qr-generator',
+    name: 'QRCodeGenerator',
+    component: () => import('@/views/QRCodeGenerator.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true
+    }
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    redirect: { name: 'Home' }
   }
 ]
 
@@ -55,7 +74,7 @@ const ensureAuthInitialized = async () => {
   if (authInitialized) {
     return // Already initialized
   }
-  
+
   if (!initialAuthPromise) {
     // Start initialization
     const authStore = useAuthStore()
@@ -63,7 +82,7 @@ const ensureAuthInitialized = async () => {
       authInitialized = true
     })
   }
-  
+
   // Wait for initialization to complete
   await initialAuthPromise
 }
@@ -71,7 +90,7 @@ const ensureAuthInitialized = async () => {
 router.beforeEach(async (to, _, next) => {
   // Wait for auth to be initialized before making routing decisions
   await ensureAuthInitialized()
-  
+
   const authStore = useAuthStore()
   const requiresAuth = to.meta.requiresAuth as boolean
   const requiresAdmin = to.meta.requiresAdmin as boolean

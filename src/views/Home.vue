@@ -1,7 +1,5 @@
 <template>
-  <div class="max-w-4xl mx-auto p-4">
-    <h1 class="text-2xl font-bold mb-6">Objekt Hochladen</h1>
-
+  <div class="max-w-4xl mx-auto pt-4 pb-4 px-2 md:px-6">
     <ObjektUploadForm />
   </div>
 </template>

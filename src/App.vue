@@ -1,92 +1,104 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useAuthStore } from './stores/auth'
-import { useRouter } from 'vue-router'
-import { Button } from '@/components/ui/button'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { ShieldCheck, LogOut, FileText, UploadIcon, Search } from 'lucide-vue-next'
 import Toaster from '@/components/ui/toast/Toaster.vue'
+import AdminMenu from '@/components/AdminMenu.vue'
+import { Button } from '@/components/ui/button'
+import { LogOut } from 'lucide-vue-next'
+import { useMediaQuery } from '@vueuse/core'
+import LogoutDialog from '@/components/LogoutDialog.vue'
 
-// Initialize the auth store 
+// Initialize the auth store
 const authStore = useAuthStore()
-const router = useRouter()
 
-// No need to initialize auth here as it's now handled by the router
-// This prevents the race condition where route guards run before auth is ready
+// Check if device is mobile
+const isMobile = useMediaQuery('(max-width: 958px)')
 
-// Handle logout
+// Logout dialog state
+const showLogoutDialog = ref(false)
+
+// Handle logout button click
+const handleLogoutClick = () => {
+  showLogoutDialog.value = true
+}
+
+// Handle actual logout after confirmation
 const handleLogout = async () => {
   await authStore.logout()
-  router.push('/login')
-}
-
-// Navigate to admin objects view
-const viewObjects = () => {
-  console.log("Navigating to admin page");
-  console.log("isAdmin:", authStore.isAdmin);
-  console.log("isAuthenticated:", authStore.isAuthenticated);
-  router.push('/admin')
-}
-
-// Navigate to similar objects demo
-const viewSimilarObjects = () => {
-  router.push('/similar')
+  window.location.href = '/login'
 }
 </script>
 
 <template>
   <Toaster />
-  <div class="app-container">
-    <!-- Admin Icon for authenticated admins -->
-    <div v-if="authStore.isAuthenticated && authStore.isAdmin" class="admin-icon">
-      <Popover>
-        <PopoverTrigger as-child>
-          <Button variant="ghost" size="icon" class="rounded-full">
-            <ShieldCheck class="h-5 w-5 text-primary" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent class="w-56">
-          <div class="grid gap-2">
-            <h3 class="font-medium text-sm mb-2">Admin Menu</h3>
-            <Button variant="ghost" class="flex w-full justify-start items-center gap-2" @click="router.push('/')">
-              <UploadIcon class="h-4 w-4" />
-              <span>Formular</span>
-            </Button>
-            <Button variant="ghost" class="flex w-full justify-start items-center gap-2" @click="viewObjects">
-              <FileText class="h-4 w-4" />
-              <span>Objekt-Tabelle</span>
-            </Button>
-            <Button variant="ghost" class="flex w-full justify-start items-center gap-2" @click="viewSimilarObjects">
-              <Search class="h-4 w-4" />
-              <div class="flex flex-col items-start">
-                <span>Ähnliche Objekte</span>
-                <span class="text-xs text-gray-500">Demo</span>
-              </div>
-            </Button>
-            <Button variant="ghost" class="flex w-full justify-start items-center gap-2 text-red-500"
-              @click="handleLogout">
+  <div class="app-container flex flex-col">
+    <!-- Mobile-only header with auth controls -->
+    <template v-if="authStore.isAuthenticated">
+      <header v-if="isMobile" class="app-header">
+        <div class="container flex justify-between items-center py-2 px-4">
+          <div class="flex items-center gap-3">
+            <img src="/android-chrome-512x512.png" alt="Logo" class="h-8 w-8 rounded-md" />
+            <h1 class="text-xl font-bold">Objektportal</h1>
+          </div>
+
+          <!-- Auth controls -->
+          <div v-if="authStore.isAuthenticated" class="flex gap-2">
+            <AdminMenu v-if="authStore.isAdmin" />
+            <Button v-if="!authStore.isAdmin" variant="outline" size="sm" @click="handleLogoutClick"
+              class="flex items-center gap-2">
               <LogOut class="h-4 w-4" />
-              <span>Abmelden</span>
+              <span>Logout</span>
             </Button>
           </div>
-        </PopoverContent>
-      </Popover>
-    </div>
-    <main>
+        </div>
+      </header>
+
+      <!-- Desktop auth controls (absolute positioning) -->
+      <div v-else class="auth-controls">
+        <div class="flex gap-2">
+          <AdminMenu v-if="authStore.isAdmin" />
+          <Button v-if="!authStore.isAdmin" variant="outline" size="sm" @click="handleLogoutClick"
+            class="flex items-center gap-2 bg-gray-100 rounded-full">
+            <LogOut class="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    </template>
+
+    <main class="flex-1 overflow-y-auto">
       <router-view />
     </main>
   </div>
+
+  <!-- Logout confirmation dialog -->
+  <LogoutDialog v-model:open="showLogoutDialog" @confirm="handleLogout" />
 </template>
 
 <style scoped>
 .app-container {
-  min-height: 100vh;
+  height: 100vh;
   position: relative;
+  overflow: hidden;
 }
 
-.admin-icon {
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background-color: white;
+  border-bottom: 1px solid #f1f1f1;
+}
+
+.auth-controls {
   position: absolute;
   top: 1rem;
   right: 1rem;
   z-index: 50;
+}
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 </style>

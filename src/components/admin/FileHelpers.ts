@@ -79,7 +79,7 @@ export const getImageThumbnailUrl = (fileData: any, directusUrl: string, token: 
     // Check for junction table format (weitereAbbildungen)
     else if (fileData.directus_files_id) {
       fileId = fileData.directus_files_id;
-    } 
+    }
     // Check for normal object with id
     else if (fileData.id) {
       fileId = fileData.id;
