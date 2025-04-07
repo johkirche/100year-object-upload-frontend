@@ -29,6 +29,28 @@ This is a Vue 3 + TypeScript + Vite application for the 100 Year Object Upload p
 - **User Authentication**: Login with username and password
 - **Role-Based Access Control**: Different access levels for regular users and admins
 - **Token Management**: Automatic token refresh and persistence
+- **Username Login**: Optional feature to allow simple username login without email format
+
+#### Username Login Feature
+
+The application supports a simplified login experience where users can enter just a username (without email format). When enabled:
+
+1. Users can log in with a simple username instead of a full email address
+2. The system automatically appends the configured email domain to the username
+3. This works for both regular login and QR code auto-login
+4. The login form adapts to show "Username" instead of "Email" when this feature is enabled
+
+To enable this feature, set the following environment variables:
+
+```
+# Enable username to email feature (true/false)
+VITE_ENABLE_USERNAME_TO_EMAIL=true
+
+# Default email domain to append to usernames when not an email
+VITE_DEFAULT_EMAIL_DOMAIN=example.com
+```
+
+If a user enters an email with @ symbol, it will be used as-is. If they enter just a username, the system will append `@example.com` (or your configured domain).
 
 ### QR Code Login
 
@@ -108,6 +130,12 @@ FRONTEND_PUBLIC_PORT=8080
 
 # Secret key for encrypting/decrypting auto-login credentials
 VITE_ENCRYPTION_SECRET=your-secret-key
+
+# Enable username to email feature (true/false)
+VITE_ENABLE_USERNAME_TO_EMAIL=false
+
+# Default email domain to append to usernames when not an email
+VITE_DEFAULT_EMAIL_DOMAIN=example.com
 ```
 
 - `VITE_DIRECTUS_URL`: URL of your Directus instance
@@ -117,101 +145,11 @@ VITE_ENCRYPTION_SECRET=your-secret-key
 - `LETSENCRYPT_EMAIL`: Email for Let's Encrypt SSL certificates (for Docker deployment)
 - `FRONTEND_PUBLIC_PORT`: Port for the frontend application (for Docker deployment)
 - `VITE_ENCRYPTION_SECRET`: Secret key for encrypting/decrypting auto-login credentials (use a strong, random string)
+- `VITE_ENABLE_USERNAME_TO_EMAIL`: Enable or disable the username-to-email feature (true/false)
+- `VITE_DEFAULT_EMAIL_DOMAIN`: The email domain to append to usernames when using the username-to-email feature
 
 ## Development
 
 To start the development server:
 
-```bash
-pnpm dev
 ```
-
-This will start the Vite development server with hot module replacement. The application will be available at http://localhost:5173 by default.
-
-### TypeScript Generation
-
-The project uses OpenAPI TypeScript generation to create type definitions from the Directus API schema:
-
-```bash
-pnpm openapi-ts
-```
-
-This command generates TypeScript types based on the OpenAPI specification in `openapi.json`.
-
-## Building for Production
-
-To build the application for production:
-
-```bash
-pnpm build
-```
-
-This will create a production-ready build in the `dist` directory.
-
-To preview the production build locally:
-
-```bash
-pnpm preview
-```
-
-## Project Structure
-
-```
-100year-object-upload-frontend/
-├── public/                  # Static assets
-├── src/                     # Source code
-│   ├── assets/              # Project assets (images, fonts, etc.)
-│   ├── client/              # API client code generated from OpenAPI
-│   ├── components/          # Vue components
-│   │   ├── admin/           # Admin-specific components
-│   │   ├── objectupload/    # Object upload components
-│   │   └── ui/              # UI components
-│   ├── composables/         # Vue composables (custom hooks)
-│   ├── lib/                 # Utility functions and libraries
-│   ├── router/              # Vue Router configuration
-│   ├── stores/              # Pinia stores for state management
-│   ├── views/               # Vue components that represent pages/routes
-│   ├── App.vue              # Main application component
-│   ├── main.ts              # Application entry point
-│   └── style.css            # Global styles
-├── .env.example             # Example environment variables
-├── docker-compose.yml       # Docker Compose configuration
-├── Dockerfile               # Docker configuration
-├── nginx.template.conf      # Nginx configuration template
-├── package.json             # Project dependencies and scripts
-├── tsconfig.json            # TypeScript configuration
-└── vite.config.ts           # Vite configuration
-```
-
-## Authentication
-
-The application uses Directus for authentication. Users can log in with their Directus credentials. Authentication tokens are stored in localStorage and automatically refreshed when needed.
-
-There are two types of users:
-- **Regular Users**: Can upload and view objects
-- **Admins**: Have additional privileges like generating QR codes and accessing admin features
-
-## Docker Deployment
-
-The project includes Docker configuration for easy deployment:
-
-1. Make sure Docker and Docker Compose are installed on your server
-2. Configure the `.env` file with your production settings
-3. Build and start the containers:
-   ```bash
-   docker-compose up -d
-   ```
-
-This will:
-- Build the frontend application
-- Set up Nginx as a reverse proxy
-- Configure SSL with Let's Encrypt
-- Expose the application on the configured port
-
-## License
-
-[Include license information here]
-
-## Contributing
-
-[Include contributing guidelines here]

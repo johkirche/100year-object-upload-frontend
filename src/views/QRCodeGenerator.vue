@@ -8,8 +8,14 @@
 
         <form @submit.prevent="generateQRCode" class="space-y-4">
           <div>
-            <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Username (Email)</label>
-            <Input id="username" v-model="username" type="email" required placeholder="Enter user email" />
+            <label for="username" class="block text-sm font-medium text-gray-700 mb-1">
+              {{ isUsernameLogin ? 'Benutzername' : 'Username (Email)' }}
+            </label>
+            <Input id="username" v-model="username" :type="isUsernameLogin ? 'text' : 'email'" required
+              :placeholder="isUsernameLogin ? 'Benutzername eingeben' : 'E-Mail eingeben'" />
+            <div v-if="isUsernameLogin" class="text-xs text-gray-500 mt-1">
+              {{ defaultEmailDomain ? `@${defaultEmailDomain} wird automatisch ergänzt` : '' }}
+            </div>
           </div>
 
           <div>
@@ -48,7 +54,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useToast } from '@/components/ui/toast/use-toast'
@@ -60,6 +66,10 @@ const { toast } = useToast()
 const username = ref('')
 const password = ref('')
 const qrCodeUrl = ref('')
+
+// Username to email feature settings
+const isUsernameLogin = computed(() => import.meta.env.VITE_ENABLE_USERNAME_TO_EMAIL === 'true')
+const defaultEmailDomain = computed(() => import.meta.env.VITE_DEFAULT_EMAIL_DOMAIN || '')
 
 // Secret key for encryption - in a real app, this should be stored securely
 const SECRET_KEY = import.meta.env.VITE_ENCRYPTION_SECRET || 'default-secret-key'

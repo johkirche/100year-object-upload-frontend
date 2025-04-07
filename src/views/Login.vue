@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-    <AnimatedBackground :blobCount="maxBlobCountDependingOnWidth" :minSize="250" :maxSize="500" :minDuration="25" :maxDuration="45" :blur="60"
-      :useRandomPalette="true" />
+    <AnimatedBackground :blobCount="maxBlobCountDependingOnWidth" :minSize="250" :maxSize="500" :minDuration="25"
+      :maxDuration="45" :blur="60" :useRandomPalette="true" />
     <Card class="max-w-md w-full relative z-10 bg-white/80 backdrop-blur-sm">
       <CardHeader>
         <CardTitle class="text-2xl font-bold tracking-tight">
@@ -25,9 +25,11 @@
           <div class="space-y-4">
             <FormField name="username">
               <FormItem>
-                <FormLabel>E-Mail</FormLabel>
+                <FormLabel>{{ isUsernameLogin ? 'Benutzername' : 'E-Mail' }}</FormLabel>
                 <FormControl>
-                  <Input v-model="username" type="email" required autocomplete="email" placeholder="E-Mail-Adresse"
+                  <Input v-model="username" :type="isUsernameLogin ? 'text' : 'email'" required
+                    :autocomplete="isUsernameLogin ? 'username' : 'email'"
+                    :placeholder="isUsernameLogin ? 'Benutzername' : 'E-Mail-Adresse'"
                     :disabled="authStore.isLoading" />
                 </FormControl>
               </FormItem>
@@ -57,7 +59,7 @@
 </template>
 
 <script setup lang="ts">
-import {ref, onMounted, computed} from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { Button } from '@/components/ui/button'
@@ -66,13 +68,16 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-vue-next'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { AnimatedBackground } from '@/components/ui/animated-background'
+import { AnimatedBackground } from '@/components/animated-background'
 
 const router = useRouter()
 const authStore = useAuthStore()
 
 const username = ref('')
 const password = ref('')
+
+// Username to email feature settings
+const isUsernameLogin = computed(() => import.meta.env.VITE_ENABLE_USERNAME_TO_EMAIL === 'true')
 
 onMounted(() => {
   if (authStore.isAuthenticated) {

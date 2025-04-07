@@ -44,6 +44,10 @@ export const useAuthStore = defineStore('auth', () => {
   // Admin role ID from environment variable
   const ADMIN_ROLE_ID = import.meta.env.VITE_ADMIN_ROLE_ID
 
+  // Username to email feature settings
+  const ENABLE_USERNAME_TO_EMAIL = import.meta.env.VITE_ENABLE_USERNAME_TO_EMAIL === 'true'
+  const DEFAULT_EMAIL_DOMAIN = import.meta.env.VITE_DEFAULT_EMAIL_DOMAIN || 'example.com'
+
   // Create storage for persistent authentication
   const storage = new LocalStorage()
 
@@ -156,8 +160,16 @@ export const useAuthStore = defineStore('auth', () => {
     error.value = null
 
     try {
+      // Check if we need to convert the username to an email
+      let loginEmail = username
+      
+      // If the feature is enabled and the username doesn't contain @ (not an email)
+      if (ENABLE_USERNAME_TO_EMAIL && !username.includes('@')) {
+        loginEmail = `${username}@${DEFAULT_EMAIL_DOMAIN}`
+      }
+
       // Authenticate user
-      await directus.login(username, password)
+      await directus.login(loginEmail, password)
 
       // Set authentication status and fetch user data
       isAuthenticated.value = true
