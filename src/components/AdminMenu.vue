@@ -17,6 +17,7 @@ interface MenuItem {
   icon: any
   action: () => void
   description?: string
+  hoverTextColor?: string
   path: string
 }
 
@@ -73,6 +74,7 @@ const menuItems: MenuItem[] = [
   {
     value: 'logout',
     label: 'Abmelden',
+    hoverTextColor: 'text-red-500',
     icon: LogOut,
     action: handleLogout,
     path: '/logout'
@@ -106,7 +108,7 @@ function onItemSelect(item: MenuItem) {
           <CommandEmpty>Keine Ergebnisse gefunden.</CommandEmpty>
           <CommandGroup>
             <CommandItem v-for="item of menuItems" :key="item.value" :value="item.value" @select="onItemSelect(item)"
-              :class="isItemActive(item) ? 'bg-accent' : ''">
+              :class="{ 'bg-accent': isItemActive(item), 'hover:bg-accent hover:cursor-pointer': !isItemActive(item), 'hover:text-red-500': item.hoverTextColor === 'text-red-500' }">
               <div class="flex items-center gap-2">
                 <component :is="item.icon" class="h-4 w-4" :class="isItemActive(item) ? 'text-primary' : ''" />
                 <div class="flex flex-col items-start">
@@ -125,8 +127,8 @@ function onItemSelect(item: MenuItem) {
 
     <Popover v-if="isDesktop" v-model:open="isOpen">
       <PopoverTrigger as-child>
-        <Button size="icon" class="rounded-full bg-gray-100">
-          <ShieldCheck class="h-5 w-5 text-primary" />
+        <Button size="icon" class="rounded-full">
+          <ShieldCheck class="h-5 w-5" />
         </Button>
       </PopoverTrigger>
       <PopoverContent class="w-56 p-0" align="end">
@@ -138,8 +140,8 @@ function onItemSelect(item: MenuItem) {
 
     <Drawer v-else v-model:open="isOpen">
       <DrawerTrigger as-child>
-        <Button size="icon" class="rounded-full bg-gray-100">
-          <ShieldCheck class="h-5 w-5 text-primary" />
+        <Button size="icon" class="rounded-full">
+          <ShieldCheck class="h-5 w-5" />
         </Button>
       </DrawerTrigger>
       <DrawerContent>
