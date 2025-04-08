@@ -54,6 +54,11 @@ const paddingLeft = computed(() => {
     return searchQueryEmpty.value ? `${props.level * 0.5 + 0.5}rem` : '0.5rem'
 })
 
+// Generate a unique and consistent ID for this node
+const nodeId = computed(() => {
+    return `tree-node-${props.option.value.replace(/[^a-zA-Z0-9]/g, '-')}`
+})
+
 // Determine if the current node matches the search query
 const matchesSearch = computed(() => {
     if (!props.searchQuery || !props.searchQuery.trim()) return false
@@ -71,7 +76,7 @@ const highlightedText = computed(() => {
 </script>
 
 <template>
-    <CommandItem :value="option.text" class="p-0">
+    <CommandItem :value="option.text" class="p-0" :id="nodeId">
         <div class="flex items-center space-x-2 p-2 w-full" :style="{ paddingLeft }"
             :class="{ 'bg-accent/20': matchesSearch }">
             <!-- Expand/collapse icon for items with children -->
@@ -101,3 +106,27 @@ const highlightedText = computed(() => {
             @toggle-expand="(value, event) => $emit('toggle-expand', value, event)" />
     </div>
 </template>
+
+<style scoped>
+/* Flash highlight animation effect */
+:global(.flash-highlight) {
+    animation: flash-animation 0.5s ease-in-out;
+}
+
+@keyframes flash-animation {
+
+    0%,
+    100% {
+        background-color: transparent;
+    }
+
+    20%,
+    80% {
+        background-color: hsl(var(--primary) / 0.15);
+    }
+
+    40% {
+        background-color: hsl(var(--primary) / 0.25);
+    }
+}
+</style>
