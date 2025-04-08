@@ -13,6 +13,7 @@ This is a Vue 3 + TypeScript + Vite application for the 100 Year Object Upload p
 - [Project Structure](#project-structure)
 - [Authentication](#authentication)
 - [Docker Deployment](#docker-deployment)
+- [Screen Shots](#screen-shots)
 
 ## Features
 
@@ -152,4 +153,34 @@ VITE_DEFAULT_EMAIL_DOMAIN=example.com
 
 To start the development server:
 
-```
+# Screenshots
+
+## Form 1 - Select if you upload a object or request one
+![Image](https://github.com/user-attachments/assets/b635a60f-f090-4be9-8c8c-0337cc68773a)
+
+## Form 2 - Object information
+![Image](https://github.com/user-attachments/assets/81746dca-a300-4e80-8f90-9c30c560cf00)
+
+## Form 3 - Image drop box
+![Image](https://github.com/user-attachments/assets/fa2f78fb-1c76-425a-a29a-b55bf5fac960)
+
+## Form 4 - Contact information
+![Image](https://github.com/user-attachments/assets/11ac34a4-4f56-44ec-a9a1-c154f3c43745)
+
+## Form 5 - Upload summary
+![Image](https://github.com/user-attachments/assets/ceaad4be-0590-4ccb-b38d-8f7129153527)
+
+## Similar Object Search to avoid duplicates
+![Image](https://github.com/user-attachments/assets/905efac5-7479-42ba-a666-d32ed258a90d)
+
+## Custom component for recursive hierarchy dropdown select with search :)
+![Image](https://github.com/user-attachments/assets/595d4f84-7cd7-47f2-ba1f-12ce7cc1cab1)
+
+## QR Code generator for easy login - NOT SAFE AS CODE IS STORED IN FRONTEND
+![Image](https://github.com/user-attachments/assets/3da018ff-93af-47d7-9da9-5e1bd1b178d9)
+
+## Admin overview of objects (paginated and search over server requests)
+![Image](https://github.com/user-attachments/assets/f0eb0994-f4cf-476c-973e-f4052138e5b6)
+
+## Admin view - Object detail
+![Image](https://github.com/user-attachments/assets/e6967383-0b88-4d90-9069-861595f87d5d)
