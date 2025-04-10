@@ -65,6 +65,7 @@ export function useObjects() {
       'kategorie',
       'status',
       'beschreibung',
+      'anmerkungEinreicher',
       'anmerkung',
       'bewertung',
       'aktuellerStandort',
@@ -141,8 +142,8 @@ export function useObjects() {
 
   // Update a specific field for an object
   const updateObjectField = async (
-    objectId: string | number, 
-    field: string, 
+    objectId: string | number,
+    field: string,
     value: any
   ) => {
     if (!objectId) {
@@ -203,8 +204,8 @@ export function useObjects() {
 
       // Add main image if exists
       if (objectToDelete?.abbildung) {
-        const mainFileId = typeof objectToDelete.abbildung === 'string' 
-          ? objectToDelete.abbildung 
+        const mainFileId = typeof objectToDelete.abbildung === 'string'
+          ? objectToDelete.abbildung
           : objectToDelete.abbildung.id
 
         if (mainFileId) fileIds.push(mainFileId)
@@ -214,8 +215,8 @@ export function useObjects() {
       if (objectToDelete?.weitereAbbildungen && objectToDelete.weitereAbbildungen.length > 0) {
         objectToDelete.weitereAbbildungen.forEach(item => {
           if (typeof item === 'object' && item.directus_files_id) {
-            const fileId = typeof item.directus_files_id === 'string' 
-              ? item.directus_files_id 
+            const fileId = typeof item.directus_files_id === 'string'
+              ? item.directus_files_id
               : item.directus_files_id.id
 
             if (fileId) fileIds.push(fileId)
@@ -325,4 +326,4 @@ export function useObjects() {
     buildCategoryLookup,
     deleteObject
   }
-} 
+}

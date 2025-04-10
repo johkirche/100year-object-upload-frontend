@@ -428,25 +428,6 @@ export const FieldsSchema = {
     'x-collection': 'directus_fields'
 } as const;
 
-export const ItemsBewertungKleinerKreisSchema = {
-    type: 'object',
-    properties: {
-        id: {
-            nullable: false,
-            type: 'integer'
-        },
-        bezeichner: {
-            nullable: true,
-            type: 'string'
-        },
-        rangfolge: {
-            nullable: true,
-            type: 'integer'
-        }
-    },
-    'x-collection': 'bewertungKleinerKreis'
-} as const;
-
 export const ItemsObjektSchema = {
     type: 'object',
     properties: {
@@ -568,6 +549,10 @@ export const ItemsObjektSchema = {
             nullable: true,
             type: 'string'
         },
+        anmerkungEinreicher: {
+            nullable: true,
+            type: 'string'
+        },
         weitereAbbildungen: {
             nullable: true,
             description: 'Weitere Abbildungen oder ergänzende Dateien',
@@ -585,6 +570,25 @@ export const ItemsObjektSchema = {
         }
     },
     'x-collection': 'objekt'
+} as const;
+
+export const ItemsBewertungKleinerKreisSchema = {
+    type: 'object',
+    properties: {
+        id: {
+            nullable: false,
+            type: 'integer'
+        },
+        bezeichner: {
+            nullable: true,
+            type: 'string'
+        },
+        rangfolge: {
+            nullable: true,
+            type: 'integer'
+        }
+    },
+    'x-collection': 'bewertungKleinerKreis'
 } as const;
 
 export const ItemsObjektFilesSchema = {

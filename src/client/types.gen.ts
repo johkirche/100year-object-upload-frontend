@@ -227,12 +227,6 @@ export type Fields = {
     validation_message?: string | null;
 };
 
-export type ItemsBewertungKleinerKreis = {
-    id?: number;
-    bezeichner?: string | null;
-    rangfolge?: number | null;
-};
-
 export type ItemsObjekt = {
     id?: number;
     status?: string;
@@ -261,10 +255,17 @@ export type ItemsObjekt = {
     aktuellerStandort?: string | null;
     anmerkung?: string | null;
     type?: string | null;
+    anmerkungEinreicher?: string | null;
     /**
      * Weitere Abbildungen oder ergänzende Dateien
      */
     weitereAbbildungen?: Array<number | ItemsObjektFiles> | null;
+};
+
+export type ItemsBewertungKleinerKreis = {
+    id?: number;
+    bezeichner?: string | null;
+    rangfolge?: number | null;
 };
 
 export type ItemsObjektFiles = {
@@ -857,6 +858,34 @@ export type RandomResponses = {
 
 export type RandomResponse = RandomResponses[keyof RandomResponses];
 
+export type DeleteFilesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/files';
+};
+
+export type DeleteFilesErrors = {
+    /**
+     * Error: Unauthorized request
+     */
+    401: {
+        error?: {
+            code?: bigint;
+            message?: string;
+        };
+    };
+};
+
+export type DeleteFilesError = DeleteFilesErrors[keyof DeleteFilesErrors];
+
+export type DeleteFilesResponses = {
+    /**
+     * Successful request
+     */
+    200: unknown;
+};
+
 export type GetFilesData = {
     body?: never;
     path?: never;
@@ -955,6 +984,39 @@ export type CreateFileResponses = {
 };
 
 export type CreateFileResponse = CreateFileResponses[keyof CreateFileResponses];
+
+export type DeleteFileData = {
+    body?: never;
+    path: {
+        /**
+         * Unique identifier for the object.
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/files/{id}';
+};
+
+export type DeleteFileErrors = {
+    /**
+     * Error: Unauthorized request
+     */
+    401: {
+        error?: {
+            code?: bigint;
+            message?: string;
+        };
+    };
+};
+
+export type DeleteFileError = DeleteFileErrors[keyof DeleteFileErrors];
+
+export type DeleteFileResponses = {
+    /**
+     * Successful request
+     */
+    200: unknown;
+};
 
 export type GetFileData = {
     body?: never;
@@ -1334,131 +1396,6 @@ export type GetMeResponses = {
 
 export type GetMeResponse = GetMeResponses[keyof GetMeResponses];
 
-export type ReadItemsBewertungKleinerKreisData = {
-    body?: never;
-    path?: never;
-    query?: {
-        /**
-         * Control what fields are being returned in the object.
-         */
-        fields?: Array<string>;
-        /**
-         * A limit on the number of objects that are returned.
-         */
-        limit?: number;
-        /**
-         * What metadata to return in the response.
-         */
-        meta?: string;
-        /**
-         * How many items to skip when fetching data.
-         */
-        offset?: number;
-        /**
-         * How to sort the returned items. `sort` is a CSV of fields used to sort the fetched items. Sorting defaults to ascending (ASC) order but a minus sign (` - `) can be used to reverse this to descending (DESC) order. Fields are prioritized by their order in the CSV. You can also use a ` ? ` to sort randomly.
-         *
-         */
-        sort?: Array<string>;
-        /**
-         * Select items in collection by given conditions.
-         */
-        filter?: {
-            [key: string]: unknown;
-        };
-        /**
-         * Filter by items that contain the given search query in one of their fields.
-         */
-        search?: string;
-    };
-    url: '/items/bewertungKleinerKreis';
-};
-
-export type ReadItemsBewertungKleinerKreisErrors = {
-    /**
-     * Error: Unauthorized request
-     */
-    401: {
-        error?: {
-            code?: bigint;
-            message?: string;
-        };
-    };
-};
-
-export type ReadItemsBewertungKleinerKreisError = ReadItemsBewertungKleinerKreisErrors[keyof ReadItemsBewertungKleinerKreisErrors];
-
-export type ReadItemsBewertungKleinerKreisResponses = {
-    /**
-     * Successful request
-     */
-    200: {
-        data?: Array<ItemsBewertungKleinerKreis>;
-        meta?: XMetadata;
-    };
-};
-
-export type ReadItemsBewertungKleinerKreisResponse = ReadItemsBewertungKleinerKreisResponses[keyof ReadItemsBewertungKleinerKreisResponses];
-
-export type ReadSingleItemsBewertungKleinerKreisData = {
-    body?: never;
-    path: {
-        /**
-         * Index of the item.
-         */
-        id: number | string;
-    };
-    query?: {
-        /**
-         * Control what fields are being returned in the object.
-         */
-        fields?: Array<string>;
-        /**
-         * What metadata to return in the response.
-         */
-        meta?: string;
-        /**
-         * Retrieve an item's state from a specific Content Version. The value corresponds to the "key" of the Content Version.
-         *
-         */
-        version?: string;
-    };
-    url: '/items/bewertungKleinerKreis/{id}';
-};
-
-export type ReadSingleItemsBewertungKleinerKreisErrors = {
-    /**
-     * Error: Unauthorized request
-     */
-    401: {
-        error?: {
-            code?: bigint;
-            message?: string;
-        };
-    };
-    /**
-     * Error: Not found.
-     */
-    404: {
-        error?: {
-            code?: bigint;
-            message?: string;
-        };
-    };
-};
-
-export type ReadSingleItemsBewertungKleinerKreisError = ReadSingleItemsBewertungKleinerKreisErrors[keyof ReadSingleItemsBewertungKleinerKreisErrors];
-
-export type ReadSingleItemsBewertungKleinerKreisResponses = {
-    /**
-     * Successful request
-     */
-    200: {
-        data?: ItemsBewertungKleinerKreis;
-    };
-};
-
-export type ReadSingleItemsBewertungKleinerKreisResponse = ReadSingleItemsBewertungKleinerKreisResponses[keyof ReadSingleItemsBewertungKleinerKreisResponses];
-
 export type DeleteItemsObjektData = {
     body?: never;
     path?: never;
@@ -1795,6 +1732,168 @@ export type UpdateSingleItemsObjektResponses = {
 };
 
 export type UpdateSingleItemsObjektResponse = UpdateSingleItemsObjektResponses[keyof UpdateSingleItemsObjektResponses];
+
+export type ReadItemsBewertungKleinerKreisData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Control what fields are being returned in the object.
+         */
+        fields?: Array<string>;
+        /**
+         * A limit on the number of objects that are returned.
+         */
+        limit?: number;
+        /**
+         * What metadata to return in the response.
+         */
+        meta?: string;
+        /**
+         * How many items to skip when fetching data.
+         */
+        offset?: number;
+        /**
+         * How to sort the returned items. `sort` is a CSV of fields used to sort the fetched items. Sorting defaults to ascending (ASC) order but a minus sign (` - `) can be used to reverse this to descending (DESC) order. Fields are prioritized by their order in the CSV. You can also use a ` ? ` to sort randomly.
+         *
+         */
+        sort?: Array<string>;
+        /**
+         * Select items in collection by given conditions.
+         */
+        filter?: {
+            [key: string]: unknown;
+        };
+        /**
+         * Filter by items that contain the given search query in one of their fields.
+         */
+        search?: string;
+    };
+    url: '/items/bewertungKleinerKreis';
+};
+
+export type ReadItemsBewertungKleinerKreisErrors = {
+    /**
+     * Error: Unauthorized request
+     */
+    401: {
+        error?: {
+            code?: bigint;
+            message?: string;
+        };
+    };
+};
+
+export type ReadItemsBewertungKleinerKreisError = ReadItemsBewertungKleinerKreisErrors[keyof ReadItemsBewertungKleinerKreisErrors];
+
+export type ReadItemsBewertungKleinerKreisResponses = {
+    /**
+     * Successful request
+     */
+    200: {
+        data?: Array<ItemsBewertungKleinerKreis>;
+        meta?: XMetadata;
+    };
+};
+
+export type ReadItemsBewertungKleinerKreisResponse = ReadItemsBewertungKleinerKreisResponses[keyof ReadItemsBewertungKleinerKreisResponses];
+
+export type CreateItemsBewertungKleinerKreisData = {
+    body?: Array<ItemsBewertungKleinerKreis> | ItemsBewertungKleinerKreis;
+    path?: never;
+    query?: {
+        /**
+         * What metadata to return in the response.
+         */
+        meta?: string;
+    };
+    url: '/items/bewertungKleinerKreis';
+};
+
+export type CreateItemsBewertungKleinerKreisErrors = {
+    /**
+     * Error: Unauthorized request
+     */
+    401: {
+        error?: {
+            code?: bigint;
+            message?: string;
+        };
+    };
+};
+
+export type CreateItemsBewertungKleinerKreisError = CreateItemsBewertungKleinerKreisErrors[keyof CreateItemsBewertungKleinerKreisErrors];
+
+export type CreateItemsBewertungKleinerKreisResponses = {
+    /**
+     * Successful request
+     */
+    200: {
+        data?: unknown;
+    };
+};
+
+export type CreateItemsBewertungKleinerKreisResponse = CreateItemsBewertungKleinerKreisResponses[keyof CreateItemsBewertungKleinerKreisResponses];
+
+export type ReadSingleItemsBewertungKleinerKreisData = {
+    body?: never;
+    path: {
+        /**
+         * Index of the item.
+         */
+        id: number | string;
+    };
+    query?: {
+        /**
+         * Control what fields are being returned in the object.
+         */
+        fields?: Array<string>;
+        /**
+         * What metadata to return in the response.
+         */
+        meta?: string;
+        /**
+         * Retrieve an item's state from a specific Content Version. The value corresponds to the "key" of the Content Version.
+         *
+         */
+        version?: string;
+    };
+    url: '/items/bewertungKleinerKreis/{id}';
+};
+
+export type ReadSingleItemsBewertungKleinerKreisErrors = {
+    /**
+     * Error: Unauthorized request
+     */
+    401: {
+        error?: {
+            code?: bigint;
+            message?: string;
+        };
+    };
+    /**
+     * Error: Not found.
+     */
+    404: {
+        error?: {
+            code?: bigint;
+            message?: string;
+        };
+    };
+};
+
+export type ReadSingleItemsBewertungKleinerKreisError = ReadSingleItemsBewertungKleinerKreisErrors[keyof ReadSingleItemsBewertungKleinerKreisErrors];
+
+export type ReadSingleItemsBewertungKleinerKreisResponses = {
+    /**
+     * Successful request
+     */
+    200: {
+        data?: ItemsBewertungKleinerKreis;
+    };
+};
+
+export type ReadSingleItemsBewertungKleinerKreisResponse = ReadSingleItemsBewertungKleinerKreisResponses[keyof ReadSingleItemsBewertungKleinerKreisResponses];
 
 export type DeleteItemsObjektFilesData = {
     body?: never;

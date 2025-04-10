@@ -66,6 +66,7 @@ const objectSchema = {
     format: z.string().optional(),
     objektAusleihenFuerAusstellung: z.boolean().optional(),
     aktuellerStandort: z.string().optional(),
+    anmerkungEinreicher: z.string().max(1000, { message: 'Anmerkung darf maximal 1000 Zeichen haben' }).optional(),
 };
 
 // Combined schema for full validation
@@ -90,6 +91,7 @@ const objectInfoSchema = toTypedSchema(
         kategorie: objectSchema.kategorie,
         art: objectSchema.art,
         format: objectSchema.format,
+        anmerkungEinreicher: objectSchema.anmerkungEinreicher,
     })
 );
 
@@ -134,6 +136,7 @@ const formData = reactive({
     einreicherName: '',
     einreicherGemeinde: 'keineAngabe',
     kontaktRueckfrage: '',
+    anmerkungEinreicher: '',
 
     // Object-specific fields
     datierung: '',
@@ -215,7 +218,8 @@ function resetAllForms() {
                 datierung: null,
                 kategorie: null,
                 art: null,
-                format: null
+                format: null,
+                anmerkungEinreicher: null
             }
         })
     }
@@ -327,6 +331,7 @@ async function onSubmit(values: any) {
             objekt.format = values.format;
             objekt.objektAusleihenFuerAusstellung = values.objektAusleihenFuerAusstellung;
             objekt.aktuellerStandort = values.aktuellerStandort;
+            objekt.anmerkungEinreicher = values.anmerkungEinreicher
 
             // Only add abbildung if a main image was uploaded
             if (hauptbildId) {
@@ -453,6 +458,12 @@ onMounted(async () => {
                     <strong class="block mb-1">Beschreibung:</strong>
                     <p class="text-sm text-muted-foreground whitespace-pre-wrap bg-gray-50 p-2 rounded border">{{
                         submittedValues.beschreibung }}</p>
+                </div>
+
+                <div v-if="submittedValues.anmerkungEinreicher" class="mt-4">
+                    <strong class="block mb-1">Anmerkung:</strong>
+                    <p class="text-sm text-muted-foreground whitespace-pre-wrap bg-gray-50 p-2 rounded border">{{
+                            submittedValues.anmerkungEinreicher }}</p>
                 </div>
 
                 <!-- FileManager shown during upload and after success (only for objects, not wishes) -->
@@ -699,6 +710,25 @@ onMounted(async () => {
                             </FormField>
                         </div>
 
+                        <!-- Anmerkung field - full width -->
+                        <FormField v-if="submissionType === 'object'" v-slot="{ field, errorMessage }" name="anmerkungEinreicher">
+                            <FormItem>
+                                <FormLabel>Anmerkung</FormLabel>
+                                <FormControl>
+                                    <div class="relative">
+                                        <textarea v-bind="field"
+                                            class="flex min-h-24 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                            placeholder="Was möchtest du noch mitteilen (zu deinem Objekt oder Wunsch)?"></textarea>
+                                        <div class="absolute bottom-1 right-2 text-xs text-muted-foreground">
+                                            {{ (field.value?.length || 0) }}/1000
+                                        </div>
+                                    </div>
+                                </FormControl>
+                                <FormDescription>Allgemeine Mitteilungen zum Objekt</FormDescription>
+                                <FormMessage>{{ errorMessage }}</FormMessage>
+                            </FormItem>
+                        </FormField>
+
                         <!-- File Upload section only for object submissions -->
                         <div v-if="submissionType === 'object'" class="pt-4">
                             <h3 class="text-lg font-medium mb-2">Bilder oder Dokumente des Objekts</h3>
@@ -774,6 +804,7 @@ onMounted(async () => {
                                     <FormMessage>{{ errorMessage }}</FormMessage>
                                 </FormItem>
                             </FormField>
+
 
                             <!-- Object-specific fields -->
                             <div v-if="submissionType === 'object'">

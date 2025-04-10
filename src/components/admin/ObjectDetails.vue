@@ -74,6 +74,11 @@
                     <p>{{ props.object.aktuellerStandort }}</p>
                 </div>
 
+                <div v-if="props.object.anmerkungEinreicher" class="space-y-1">
+                    <p class="font-medium">Anmerkung des Einreichers:</p>
+                    <p>{{ props.object.anmerkungEinreicher }}</p>
+                </div>
+
                 <!-- Category field with edit button -->
                 <div class="space-y-1">
                     <div class="flex items-center space-x-2">
