@@ -188,7 +188,7 @@ async function uploadSingleFile(fileItem: FileItem, title: string): Promise<stri
   // Get the authentication token
   const token = await getAuthToken()
   if (!token) {
-    throw new Error('Nicht autorisiert. Bitte melden Sie sich an.')
+    throw new Error('Nicht autorisiert. Bitte melde dich an.')
   }
 
   // Maximum number of retry attempts
@@ -400,10 +400,10 @@ defineExpose({
       <ImageDropzone :disabled="isUploading" :accept-all-files="true" @files-added="handleFilesAdded" />
       <p class="mt-2 text-sm text-gray-500">
         <template v-if="!props.filesOptional">
-          Bitte markieren Sie ein Bild als Hauptbild durch auswählen der Checkbox.
+          Bitte markiere ein Bild als Hauptbild durch auswählen der Checkbox.
         </template>
         <template v-else>
-          Wenn Sie Bilder hochladen, wählen Sie bitte ein Hauptbild durch die Checkbox aus.
+          Wenn du Bilder hochlädst, wähle bitte ein Hauptbild durch die Checkbox aus.
         </template>
         Maximale Dateigröße: {{ formatFileSize(props.maxFileSize) }}
       </p>

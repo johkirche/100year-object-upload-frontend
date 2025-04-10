@@ -526,9 +526,9 @@ onMounted(async () => {
                 :validation-schema="formValidationSchema" class="space-y-8" @submit="onStepSubmit" v-slot="{ meta }">
                 <Card>
                     <CardHeader class="px-3 md:px-6">
-                        <CardTitle>Was möchten Sie einreichen?</CardTitle>
+                        <CardTitle>Was möchtest du einreichen?</CardTitle>
                         <CardDescription>
-                            Wählen Sie zwischen einem konkreten Objektvorschlag oder einem Ausstellungswunsch
+                            Wähle zwischen einem konkreten Objektvorschlag oder einem Ausstellungswunsch
                         </CardDescription>
                     </CardHeader>
                     <CardContent class="px-3 md:px-6">
@@ -600,9 +600,9 @@ onMounted(async () => {
                             <span v-else>Objektwunsch</span>
                         </CardTitle>
                         <CardDescription>
-                            <span v-if="submissionType === 'object'">Bitte geben Sie Informationen zu Ihrem Objekt
+                            <span v-if="submissionType === 'object'">Bitte gib Informationen zu deinem Objekt
                                 an</span>
-                            <span v-else>Bitte beschreiben Sie das gewünschte Ausstellungsobjekt</span>
+                            <span v-else>Bitte beschreibe das gewünschte Ausstellungsobjekt</span>
                         </CardDescription>
                     </CardHeader>
                     <CardContent class="space-y-6 px-3 md:px-6">
@@ -725,9 +725,9 @@ onMounted(async () => {
                 :validation-schema="formValidationSchema" class="space-y-8" @submit="onStepSubmit" v-slot="{ meta }">
                 <Card>
                     <CardHeader class="px-3 md:px-6">
-                        <CardTitle>Ihre Kontaktinformationen</CardTitle>
+                        <CardTitle>Deine Kontaktinformationen</CardTitle>
                         <CardDescription>
-                            Bitte geben Sie Ihre Kontaktdaten an
+                            Bitte gib deine Kontaktdaten an
                         </CardDescription>
                     </CardHeader>
                     <CardContent class="space-y-6 px-3 md:px-6">
@@ -738,7 +738,7 @@ onMounted(async () => {
                                     <FormControl>
                                         <Input v-bind="field" placeholder="Vor- und Nachname" />
                                     </FormControl>
-                                    <FormDescription>Ihr vollständiger Name</FormDescription>
+                                    <FormDescription>Dein vollständiger Name</FormDescription>
                                     <FormMessage>{{ errorMessage }}</FormMessage>
                                 </FormItem>
                             </FormField>
@@ -759,7 +759,7 @@ onMounted(async () => {
                                             </SelectContent>
                                         </Select>
                                     </FormControl>
-                                    <FormDescription>Zu welcher Gemeinde gehören Sie?</FormDescription>
+                                    <FormDescription>Zu welcher Gemeinde gehörst du?</FormDescription>
                                     <FormMessage>{{ errorMessage }}</FormMessage>
                                 </FormItem>
                             </FormField>
@@ -770,7 +770,7 @@ onMounted(async () => {
                                     <FormControl>
                                         <Input v-bind="field" type="email" placeholder="E-Mail-Adresse" />
                                     </FormControl>
-                                    <FormDescription>Ihre E-Mail-Adresse für eventuelle Rückfragen</FormDescription>
+                                    <FormDescription>Deine E-Mail-Adresse für eventuelle Rückfragen</FormDescription>
                                     <FormMessage>{{ errorMessage }}</FormMessage>
                                 </FormItem>
                             </FormField>
