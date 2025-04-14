@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { createReusableTemplate, useMediaQuery } from '@vueuse/core'
-import { ShieldCheck, LogOut, FileText, UploadIcon, Search, QrCode } from 'lucide-vue-next'
+import { MenuIcon, LogOut, FileText, UploadIcon, Search, QrCode } from 'lucide-vue-next'
 
 import { useAuthStore } from '@/stores/auth'
 
@@ -128,7 +128,7 @@ function onItemSelect(item: MenuItem) {
     <Popover v-if="isDesktop" v-model:open="isOpen">
       <PopoverTrigger as-child>
         <Button size="icon" class="rounded-full">
-          <ShieldCheck class="h-5 w-5" />
+          <MenuIcon class="h-5 w-5" />
         </Button>
       </PopoverTrigger>
       <PopoverContent class="w-56 p-0" align="end">
@@ -141,7 +141,7 @@ function onItemSelect(item: MenuItem) {
     <Drawer v-else v-model:open="isOpen">
       <DrawerTrigger as-child>
         <Button size="icon" class="rounded-full">
-          <ShieldCheck class="h-5 w-5" />
+          <MenuIcon class="h-5 w-5" />
         </Button>
       </DrawerTrigger>
       <DrawerContent>
