@@ -4,7 +4,6 @@ import type { ItemsObjekt } from '@/client/types.gen'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/components/ui/toast/use-toast'
 
-
 export function useObjects() {
   const { toast } = useToast()
 
@@ -32,13 +31,13 @@ export function useObjects() {
 
     if (terms.length === 0) return {}
 
-    // Create filter with "contains" for each term as an OR condition
-    const nameFilters = terms.map(term => ({
-      name: { _contains: term }
+    // Create filter with "icontains" for each term as an OR condition (case insensitive)
+    const nameFilters = terms.map((term) => ({
+      name: { _icontains: term }
     }))
 
-    const descriptionFilters = terms.map(term => ({
-      beschreibung: { _contains: term }
+    const descriptionFilters = terms.map((term) => ({
+      beschreibung: { _icontains: term }
     }))
 
     // Combine name and description filters with OR
@@ -115,10 +114,10 @@ export function useObjects() {
       // Otherwise, replace the objects array
       if (append && page > 1) {
         // Create a Set of existing IDs to avoid duplicates
-        const existingIds = new Set(objects.value.map(obj => obj.id))
+        const existingIds = new Set(objects.value.map((obj) => obj.id))
 
         // Filter out any duplicates from the new response
-        const newObjects = (response as ItemsObjekt[]).filter(obj => !existingIds.has(obj.id))
+        const newObjects = (response as ItemsObjekt[]).filter((obj) => !existingIds.has(obj.id))
 
         // Append new objects to the existing array
         objects.value = [...objects.value, ...newObjects]
@@ -141,11 +140,7 @@ export function useObjects() {
   }
 
   // Update a specific field for an object
-  const updateObjectField = async (
-    objectId: string | number,
-    field: string,
-    value: any
-  ) => {
+  const updateObjectField = async (objectId: string | number, field: string, value: any) => {
     if (!objectId) {
       error.value = 'Keine Objekt-ID angegeben'
       return false
@@ -157,13 +152,11 @@ export function useObjects() {
       updatePayload[field] = value
 
       // Update in Directus
-      await directus.request(
-        updateItem('objekt', objectId, updatePayload)
-      )
+      await directus.request(updateItem('objekt', objectId, updatePayload))
 
       // Update local state
       const objectIdNum = typeof objectId === 'string' ? parseInt(objectId, 10) : objectId
-      const index = objects.value.findIndex(item => item.id === objectIdNum)
+      const index = objects.value.findIndex((item) => item.id === objectIdNum)
       if (index !== -1) {
         // Create a new array to trigger reactivity
         const newData = [...objects.value]
@@ -186,14 +179,14 @@ export function useObjects() {
       toast({
         title: 'Fehler',
         description: 'Keine Objekt-ID angegeben',
-        variant: 'warning',
+        variant: 'warning'
       })
       return false
     }
 
     try {
       // First, fetch the object to get file IDs
-      const objectToDelete = objects.value.find(item => item.id === objectId)
+      const objectToDelete = objects.value.find((item) => item.id === objectId)
       if (!objectToDelete) {
         error.value = 'Objekt konnte nicht gefunden werden'
         return false
@@ -204,20 +197,22 @@ export function useObjects() {
 
       // Add main image if exists
       if (objectToDelete?.abbildung) {
-        const mainFileId = typeof objectToDelete.abbildung === 'string'
-          ? objectToDelete.abbildung
-          : objectToDelete.abbildung.id
+        const mainFileId =
+          typeof objectToDelete.abbildung === 'string'
+            ? objectToDelete.abbildung
+            : objectToDelete.abbildung.id
 
         if (mainFileId) fileIds.push(mainFileId)
       }
 
       // Add additional images if they exist
       if (objectToDelete?.weitereAbbildungen && objectToDelete.weitereAbbildungen.length > 0) {
-        objectToDelete.weitereAbbildungen.forEach(item => {
+        objectToDelete.weitereAbbildungen.forEach((item) => {
           if (typeof item === 'object' && item.directus_files_id) {
-            const fileId = typeof item.directus_files_id === 'string'
-              ? item.directus_files_id
-              : item.directus_files_id.id
+            const fileId =
+              typeof item.directus_files_id === 'string'
+                ? item.directus_files_id
+                : item.directus_files_id.id
 
             if (fileId) fileIds.push(fileId)
           }
@@ -227,28 +222,24 @@ export function useObjects() {
       // First delete associated files (if any)
       if (fileIds.length > 0) {
         try {
-          await directus.request(
-            deleteFiles(fileIds)
-          )
+          await directus.request(deleteFiles(fileIds))
         } catch (fileErr) {
           console.error('Error deleting files:', fileErr)
           error.value = 'Fehler beim Löschen der zugehörigen Dateien'
           toast({
             title: 'Fehler',
             description: 'Fehler beim Löschen der zugehörigen Dateien',
-            variant: 'destructive',
+            variant: 'destructive'
           })
           return false
         }
       }
 
       // Only proceed to delete the object if file deletion was successful
-      await directus.request(
-        deleteItem('objekt', objectId)
-      )
+      await directus.request(deleteItem('objekt', objectId))
 
       // Remove from local state
-      objects.value = objects.value.filter(item => item.id !== objectId)
+      objects.value = objects.value.filter((item) => item.id !== objectId)
 
       return true
     } catch (err) {
@@ -257,7 +248,7 @@ export function useObjects() {
       toast({
         title: 'Fehler',
         description: 'Fehler beim Löschen des Objekts',
-        variant: 'destructive',
+        variant: 'destructive'
       })
       return false
     }
@@ -266,33 +257,31 @@ export function useObjects() {
   // Get field options from Directus
   const getFieldOptions = async (fieldName: string) => {
     try {
-      const fieldResponse = await directus.request(
-        readField("objekt", fieldName)
-      );
+      const fieldResponse = await directus.request(readField('objekt', fieldName))
 
       if (fieldResponse.meta?.options?.choices) {
         return {
           options: fieldResponse.meta.options.choices,
           error: null
-        };
+        }
       }
 
       return {
         options: [],
         error: null
-      };
+      }
     } catch (error) {
-      console.error(`Error fetching ${fieldName} options:`, error);
+      console.error(`Error fetching ${fieldName} options:`, error)
       toast({
         title: 'Fehler',
         description: `Fehler beim Laden der ${fieldName}-Optionen.`,
-        variant: 'destructive',
+        variant: 'destructive'
       })
       return {
         options: [],
         error: `Fehler beim Laden der ${fieldName}-Optionen.`,
-        variant: 'destructive',
-      };
+        variant: 'destructive'
+      }
     }
   }
 

@@ -229,6 +229,7 @@ export const useAuthStore = defineStore('auth', () => {
     isAuthenticated,
     isLoading,
     error,
+    DIRECTUS_URL,
     login,
     logout,
     getClient,
