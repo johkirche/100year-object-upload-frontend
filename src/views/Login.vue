@@ -94,7 +94,7 @@
   import { AlertCircle } from 'lucide-vue-next'
   import { Input } from '@/components/ui/input'
   import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-  import { AnimatedBackground } from '@/components/animated-background'
+  // import { AnimatedBackground } from '@/components/animated-background'
 
   const router = useRouter()
   const authStore = useAuthStore()
@@ -111,18 +111,18 @@
     }
   })
 
-  const maxBlobCountDependingOnWidth = computed(() => {
-    const width = window.innerWidth
-    if (width < 640) {
-      return 4
-    } else if (width < 768) {
-      return 5
-    } else if (width < 1024) {
-      return 8
-    } else {
-      return 10
-    }
-  })
+  // const maxBlobCountDependingOnWidth = computed(() => {
+  //   const width = window.innerWidth
+  //   if (width < 640) {
+  //     return 4
+  //   } else if (width < 768) {
+  //     return 5
+  //   } else if (width < 1024) {
+  //     return 8
+  //   } else {
+  //     return 10
+  //   }
+  // })
 
   const handleSubmit = async () => {
     // Call the login method from the auth store
