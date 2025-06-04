@@ -112,11 +112,7 @@
               }"
             >
               <div class="flex items-center gap-2">
-                <component
-                  :is="item.icon"
-                  class="h-4 w-4"
-                  :class="isItemActive(item) ? 'text-primary' : ''"
-                />
+                <component :is="item.icon" class="h-4 w-4" />
                 <div class="flex flex-col items-start">
                   <span :class="isItemActive(item) ? 'font-medium' : ''">{{ item.label }}</span>
                   <span v-if="item.description" class="text-xs text-gray-500">{{
@@ -125,7 +121,7 @@
                 </div>
               </div>
               <div v-if="isItemActive(item)" class="ml-auto">
-                <div class="h-2 w-2 rounded-full bg-primary"></div>
+                <div class="h-2 w-2 rounded-full bar-color-background"></div>
               </div>
             </CommandItem>
           </CommandGroup>

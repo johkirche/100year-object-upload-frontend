@@ -1,14 +1,32 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-    <AnimatedBackground :blobCount="maxBlobCountDependingOnWidth" :minSize="250" :maxSize="500" :minDuration="25"
-      :maxDuration="45" :blur="60" :useRandomPalette="true" />
-    <Card class="max-w-md w-full relative z-10 bg-white/80 backdrop-blur-sm">
+  <div
+    class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden"
+  >
+    <!-- Logo positioned fixed at top left -->
+    <div class="fixed top-4 left-4 z-20">
+      <img
+        src="@/assets/imgs/2025-06-02_logo_100Jahre.svg"
+        alt="100 Jahre Logo"
+        class="w-48 h-48"
+      />
+    </div>
+
+    <!-- <AnimatedBackground
+      :blobCount="maxBlobCountDependingOnWidth"
+      :minSize="250"
+      :maxSize="500"
+      :minDuration="25"
+      :maxDuration="45"
+      :blur="60"
+      :useRandomPalette="true"
+    /> -->
+    <Card class="max-w-md w-full relative z-10">
       <CardHeader>
         <CardTitle class="text-2xl font-bold tracking-tight">
-          100 Jahre | 100 Objekte
+          Hunderte Objekte - eine Ausstellung!
         </CardTitle>
         <CardDescription class="mt-2 text-lg font-bold tracking-tight">
-          Formular für die Sammlung von 100 Objekten für die Ausstellung zu 100 Jahre Johannische Kirche
+          Wir sammeln für unsere Ausstellung zum Jubiläum von 100 Jahre Johannische Kirche.
         </CardDescription>
       </CardHeader>
 
@@ -27,10 +45,13 @@
               <FormItem>
                 <FormLabel>{{ isUsernameLogin ? 'Benutzername' : 'E-Mail' }}</FormLabel>
                 <FormControl>
-                  <Input v-model="username" :type="isUsernameLogin ? 'text' : 'email'" required
+                  <Input
+                    v-model="username"
+                    :type="isUsernameLogin ? 'text' : 'email'"
+                    required
                     :autocomplete="isUsernameLogin ? 'username' : 'email'"
-                    :placeholder="isUsernameLogin ? 'Benutzername' : 'E-Mail-Adresse'"
-                    :disabled="authStore.isLoading" />
+                    :disabled="authStore.isLoading"
+                  />
                 </FormControl>
               </FormItem>
             </FormField>
@@ -39,8 +60,13 @@
               <FormItem>
                 <FormLabel>Passwort</FormLabel>
                 <FormControl>
-                  <Input v-model="password" type="password" required autocomplete="current-password"
-                    placeholder="Passwort" :disabled="authStore.isLoading" />
+                  <Input
+                    v-model="password"
+                    type="password"
+                    required
+                    autocomplete="current-password"
+                    :disabled="authStore.isLoading"
+                  />
                 </FormControl>
               </FormItem>
             </FormField>
@@ -59,52 +85,52 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
-import { Button } from '@/components/ui/button'
-import { Form, FormField, FormControl, FormItem, FormLabel } from '@/components/ui/form'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { AlertCircle } from 'lucide-vue-next'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { AnimatedBackground } from '@/components/animated-background'
+  import { ref, onMounted, computed } from 'vue'
+  import { useRouter } from 'vue-router'
+  import { useAuthStore } from '@/stores/auth'
+  import { Button } from '@/components/ui/button'
+  import { Form, FormField, FormControl, FormItem, FormLabel } from '@/components/ui/form'
+  import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+  import { AlertCircle } from 'lucide-vue-next'
+  import { Input } from '@/components/ui/input'
+  import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+  import { AnimatedBackground } from '@/components/animated-background'
 
-const router = useRouter()
-const authStore = useAuthStore()
+  const router = useRouter()
+  const authStore = useAuthStore()
 
-const username = ref('')
-const password = ref('')
+  const username = ref('')
+  const password = ref('')
 
-// Username to email feature settings
-const isUsernameLogin = computed(() => import.meta.env.VITE_ENABLE_USERNAME_TO_EMAIL === 'true')
+  // Username to email feature settings
+  const isUsernameLogin = computed(() => import.meta.env.VITE_ENABLE_USERNAME_TO_EMAIL === 'true')
 
-onMounted(() => {
-  if (authStore.isAuthenticated) {
-    router.push('/')
+  onMounted(() => {
+    if (authStore.isAuthenticated) {
+      router.push('/')
+    }
+  })
+
+  const maxBlobCountDependingOnWidth = computed(() => {
+    const width = window.innerWidth
+    if (width < 640) {
+      return 4
+    } else if (width < 768) {
+      return 5
+    } else if (width < 1024) {
+      return 8
+    } else {
+      return 10
+    }
+  })
+
+  const handleSubmit = async () => {
+    // Call the login method from the auth store
+    await authStore.login(username.value, password.value)
+
+    // If login is successful, redirect to home page
+    if (authStore.isAuthenticated) {
+      router.push('/')
+    }
   }
-})
-
-const maxBlobCountDependingOnWidth = computed(() => {
-  const width = window.innerWidth
-  if (width < 640) {
-    return 4
-  } else if (width < 768) {
-    return 5
-  } else if (width < 1024) {
-    return 8
-  } else {
-    return 10
-  }
-})
-
-const handleSubmit = async () => {
-  // Call the login method from the auth store
-  await authStore.login(username.value, password.value)
-
-  // If login is successful, redirect to home page
-  if (authStore.isAuthenticated) {
-    router.push('/')
-  }
-}
 </script>

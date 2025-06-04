@@ -1,27 +1,29 @@
 <script setup lang="ts">
-import { cn } from '@/lib/utils'
-import { ChevronDown } from 'lucide-vue-next'
-import { SelectIcon, SelectTrigger, type SelectTriggerProps, useForwardProps } from 'reka-ui'
-import { computed, type HTMLAttributes } from 'vue'
+  import { cn } from '@/lib/utils'
+  import { ChevronDown } from 'lucide-vue-next'
+  import { SelectIcon, SelectTrigger, type SelectTriggerProps, useForwardProps } from 'reka-ui'
+  import { computed, type HTMLAttributes } from 'vue'
 
-const props = defineProps<SelectTriggerProps & { class?: HTMLAttributes['class'] }>()
+  const props = defineProps<SelectTriggerProps & { class?: HTMLAttributes['class'] }>()
 
-const delegatedProps = computed(() => {
-  const { class: _, ...delegated } = props
+  const delegatedProps = computed(() => {
+    const { class: _, ...delegated } = props
 
-  return delegated
-})
+    return delegated
+  })
 
-const forwardedProps = useForwardProps(delegatedProps)
+  const forwardedProps = useForwardProps(delegatedProps)
 </script>
 
 <template>
   <SelectTrigger
     v-bind="forwardedProps"
-    :class="cn(
-      'flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background data-[placeholder]:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:truncate text-start',
-      props.class,
-    )"
+    :class="
+      cn(
+        'flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-white form-text-color px-3 py-2 text-sm shadow-sm ring-offset-background data-[placeholder]:form-text-color-placeholder focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:truncate text-start',
+        props.class
+      )
+    "
   >
     <slot />
     <SelectIcon as-child>
@@ -29,3 +31,10 @@ const forwardedProps = useForwardProps(delegatedProps)
     </SelectIcon>
   </SelectTrigger>
 </template>
+
+<style>
+  /* Method 1: Direct data attribute selector */
+  [data-placeholder] {
+    color: #9ca3af; /* placeholder color */
+  }
+</style>

@@ -558,7 +558,7 @@
           <div class="text-sm font-medium">
             <span
               :class="{
-                'text-primary': currentStep === 'object-info',
+                'bar-color': currentStep === 'object-info',
                 'text-gray-400': currentStep !== 'object-info'
               }"
             >
@@ -569,7 +569,7 @@
           <div class="text-sm font-medium">
             <span
               :class="{
-                'text-primary': currentStep === 'submitter-info',
+                'bar-color': currentStep === 'submitter-info',
                 'text-gray-400': currentStep !== 'submitter-info'
               }"
             >
@@ -580,7 +580,7 @@
         </div>
         <div class="w-full bg-gray-200 rounded-full h-2.5 mt-2">
           <div
-            class="bg-primary h-2.5 rounded-full"
+            class="bar-color-background h-2.5 rounded-full"
             :style="{
               width:
                 currentStep === 'object-info'
@@ -619,10 +619,10 @@
                     @update:model-value="field.onChange"
                   >
                     <div
-                      class="flex flex-col p-4 md:p-6 border rounded-md cursor-pointer hover:bg-gray-50"
+                      class="flex flex-col p-4 md:p-6 border rounded-md cursor-pointer form-text-color"
                       :class="{
-                        'border-primary border-2 shadow-sm': field.value === 'object',
-                        'border-input': field.value !== 'object'
+                        'border-primary border-2 shadow-sm bg-primary': field.value === 'object',
+                        'border-input bg-white hover:bg-gray-50': field.value !== 'object'
                       }"
                       @click="field.onChange('object')"
                     >
@@ -630,11 +630,11 @@
                         <RadioGroupItem value="object" class="sr-only" />
                       </FormControl>
                       <div class="flex flex-col items-center text-center">
-                        <div class="p-2 rounded-full bg-primary/10 mb-4">
-                          <ImageIcon class="h-6 w-6 text-primary" />
+                        <div class="p-2 rounded-full bg-primary/20 mb-4">
+                          <ImageIcon class="h-6 w-6" />
                         </div>
                         <FormLabel class="font-medium text-lg mb-2">Objektvorschlag</FormLabel>
-                        <FormDescription>
+                        <FormDescription class="form-text-color-placeholder">
                           Ich besitze ein konkretes Objekt und möchte es für die Ausstellung
                           vorschlagen
                         </FormDescription>
@@ -642,10 +642,10 @@
                     </div>
 
                     <div
-                      class="flex flex-col p-4 md:p-6 border rounded-md cursor-pointer hover:bg-gray-50"
+                      class="flex flex-col p-4 md:p-6 border rounded-md cursor-pointer form-text-color"
                       :class="{
-                        'border-primary border-2 shadow-sm': field.value === 'wish',
-                        'border-input': field.value !== 'wish'
+                        'border-primary border-2 shadow-sm bg-primary': field.value === 'wish',
+                        'border-input bg-white hover:bg-gray-50': field.value !== 'wish'
                       }"
                       @click="field.onChange('wish')"
                     >
@@ -654,10 +654,10 @@
                       </FormControl>
                       <div class="flex flex-col items-center text-center">
                         <div class="p-2 rounded-full bg-primary/10 mb-4">
-                          <MessageSquareIcon class="h-6 w-6 text-primary" />
+                          <MessageSquareIcon class="h-6 w-6" />
                         </div>
                         <FormLabel class="font-medium text-lg mb-2">Ausstellungswunsch </FormLabel>
-                        <FormDescription>
+                        <FormDescription class="form-text-color-placeholder">
                           Ich möchte ein Objekt vorschlagen, das in der Ausstellung gezeigt werden
                           sollte
                         </FormDescription>
@@ -730,7 +730,7 @@
                   <div class="relative">
                     <textarea
                       v-bind="field"
-                      class="flex min-h-32 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                      class="flex min-h-32 w-full rounded-md border border-input bg-white placeholder:form-text-color-placeholder form-text-color px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                       placeholder="Beschreiben Sie das Objekt und seine Bedeutung"
                     ></textarea>
                     <div class="absolute bottom-1 right-2 text-xs text-muted-foreground">
@@ -815,7 +815,7 @@
                   <div class="relative">
                     <textarea
                       v-bind="field"
-                      class="flex min-h-24 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                      class="flex min-h-24 w-full rounded-md border border-input bg-white placeholder:form-text-color-placeholder form-text-color px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                       placeholder="Was möchtest du noch mitteilen (zu deinem Objekt oder Wunsch)?"
                     ></textarea>
                     <div class="absolute bottom-1 right-2 text-xs text-muted-foreground">
@@ -843,7 +843,7 @@
             </div>
           </CardContent>
           <CardFooter class="px-3 md:px-6 flex justify-between">
-            <Button type="button" variant="outline" @click="prevStep">
+            <Button type="button" variant="outline" @click="prevStep" class="text-foreground">
               <ArrowLeftIcon class="mr-2 h-4 w-4" />
               Zurück
             </Button>
@@ -873,7 +873,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField v-slot="{ field, errorMessage }" name="einreicherName">
                 <FormItem>
-                  <FormLabel>Name des Einreichers</FormLabel>
+                  <FormLabel>Name des Einreichers*</FormLabel>
                   <FormControl>
                     <Input v-bind="field" placeholder="Vor- und Nachname" />
                   </FormControl>
@@ -952,7 +952,7 @@
             </div>
           </CardContent>
           <CardFooter class="px-3 md:px-6 flex justify-between">
-            <Button type="button" variant="outline" @click="prevStep">
+            <Button type="button" variant="outline" @click="prevStep" class="text-muted-foreground">
               <ArrowLeftIcon class="mr-2 h-4 w-4" />
               Zurück
             </Button>
@@ -966,3 +966,13 @@
     </div>
   </div>
 </template>
+
+<style>
+  .bar-color {
+    color: #004a94;
+  }
+
+  .bar-color-background {
+    background-color: #004a94;
+  }
+</style>

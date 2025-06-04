@@ -11,13 +11,13 @@ export const alertVariants = cva(
       variant: {
         default: 'bg-background text-foreground',
         destructive:
-          'border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive',
-      },
+          'border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive bg-destructive/30'
+      }
     },
     defaultVariants: {
-      variant: 'default',
-    },
-  },
+      variant: 'default'
+    }
+  }
 )
 
 export type AlertVariants = VariantProps<typeof alertVariants>
