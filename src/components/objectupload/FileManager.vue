@@ -497,7 +497,10 @@
             <label
               :for="`main-file-${index}`"
               class="text-sm font-medium leading-none"
-              :class="{ 'text-gray-400': !fileItem.isImage }"
+              :class="{
+                'text-gray-400': !fileItem.isImage,
+                'form-text-color-placeholder': fileItem.isImage
+              }"
             >
               Hauptbild
               <span v-if="!fileItem.isImage" class="text-xs">(nur für Bilder)</span>
