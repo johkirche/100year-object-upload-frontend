@@ -1,50 +1,50 @@
 <script setup lang="ts">
-import { defineEmits } from 'vue'
-import {
+  import { defineEmits } from 'vue'
+  import {
     Dialog,
     DialogContent,
     DialogHeader,
     DialogTitle,
     DialogDescription,
     DialogFooter
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
+  } from '@/components/ui/dialog'
+  import { Button } from '@/components/ui/button'
 
-defineProps<{
+  defineProps<{
     open: boolean
-}>()
+  }>()
 
-const emits = defineEmits<{
+  const emits = defineEmits<{
     'update:open': [value: boolean]
-    'confirm': []
-    'cancel': []
-}>()
+    confirm: []
+    cancel: []
+  }>()
 
-const handleConfirm = () => {
+  const handleConfirm = () => {
     emits('confirm')
     emits('update:open', false)
-}
+  }
 
-const handleCancel = () => {
+  const handleCancel = () => {
     emits('cancel')
     emits('update:open', false)
-}
+  }
 </script>
 
 <template>
-    <Dialog :open="open" @update:open="(val) => emits('update:open', val)">
-        <DialogContent>
-            <DialogHeader>
-                <DialogTitle>Abmelden bestätigen</DialogTitle>
-                <DialogDescription>
-                    Sind Sie sicher, dass Sie sich abmelden möchten? Um wieder auf das Formular zugreifen zu können,
-                    müssen Sie den QR-Code erneut scannen.
-                </DialogDescription>
-            </DialogHeader>
-            <DialogFooter class="flex gap-2 justify-end">
-                <Button variant="outline" @click="handleCancel">Abbrechen</Button>
-                <Button variant="destructive" @click="handleConfirm">Abmelden</Button>
-            </DialogFooter>
-        </DialogContent>
-    </Dialog>
+  <Dialog :open="open" @update:open="(val) => emits('update:open', val)">
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle class="form-text-color">Abmelden bestätigen</DialogTitle>
+        <DialogDescription class="form-text-color-placeholder">
+          Sind Sie sicher, dass Sie sich abmelden möchten? Um wieder auf das Formular zugreifen zu
+          können, müssen Sie den QR-Code erneut scannen.
+        </DialogDescription>
+      </DialogHeader>
+      <DialogFooter class="flex gap-2 justify-end">
+        <Button variant="outline" @click="handleCancel">Abbrechen</Button>
+        <Button variant="destructive" @click="handleConfirm">Abmelden</Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
 </template>

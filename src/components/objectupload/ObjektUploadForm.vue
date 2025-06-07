@@ -619,10 +619,12 @@
                     @update:model-value="field.onChange"
                   >
                     <div
-                      class="flex flex-col p-4 md:p-6 border rounded-md cursor-pointer form-text-color"
+                      class="flex flex-col p-4 md:p-6 border rounded-md cursor-pointer"
                       :class="{
-                        'border-primary border-2 shadow-sm bg-primary': field.value === 'object',
-                        'border-input bg-white hover:bg-gray-50': field.value !== 'object'
+                        'border-primary border-2 shadow-sm bg-primary text-white':
+                          field.value === 'object',
+                        'border-input bg-white hover:bg-gray-50 form-text-color':
+                          field.value !== 'object'
                       }"
                       @click="field.onChange('object')"
                     >
@@ -630,11 +632,19 @@
                         <RadioGroupItem value="object" class="sr-only" />
                       </FormControl>
                       <div class="flex flex-col items-center text-center">
-                        <div class="p-2 rounded-full bg-primary/20 mb-4">
+                        <div
+                          class="p-2 rounded-full bg-primary/20 mb-4"
+                          :class="{ 'border-white border-2': field.value === 'object' }"
+                        >
                           <ImageIcon class="h-6 w-6" />
                         </div>
                         <FormLabel class="font-medium text-lg mb-2">Objektvorschlag</FormLabel>
-                        <FormDescription class="form-text-color-placeholder">
+                        <FormDescription
+                          :class="{
+                            'text-white': field.value === 'object',
+                            'form-text-color-placeholder': field.value !== 'object'
+                          }"
+                        >
                           Ich besitze ein konkretes Objekt und möchte es für die Ausstellung
                           vorschlagen
                         </FormDescription>
@@ -642,10 +652,12 @@
                     </div>
 
                     <div
-                      class="flex flex-col p-4 md:p-6 border rounded-md cursor-pointer form-text-color"
+                      class="flex flex-col p-4 md:p-6 border rounded-md cursor-pointer"
                       :class="{
-                        'border-primary border-2 shadow-sm bg-primary': field.value === 'wish',
-                        'border-input bg-white hover:bg-gray-50': field.value !== 'wish'
+                        'border-primary border-2 shadow-sm bg-primary text-white':
+                          field.value === 'wish',
+                        'border-input bg-white hover:bg-gray-50 form-text-color':
+                          field.value !== 'wish'
                       }"
                       @click="field.onChange('wish')"
                     >
@@ -653,11 +665,19 @@
                         <RadioGroupItem value="wish" class="sr-only" />
                       </FormControl>
                       <div class="flex flex-col items-center text-center">
-                        <div class="p-2 rounded-full bg-primary/10 mb-4">
+                        <div
+                          class="p-2 rounded-full bg-primary/20 mb-4"
+                          :class="{ 'border-white border-2': field.value === 'wish' }"
+                        >
                           <MessageSquareIcon class="h-6 w-6" />
                         </div>
                         <FormLabel class="font-medium text-lg mb-2">Ausstellungswunsch </FormLabel>
-                        <FormDescription class="form-text-color-placeholder">
+                        <FormDescription
+                          :class="{
+                            'text-white': field.value === 'wish',
+                            'form-text-color-placeholder': field.value !== 'wish'
+                          }"
+                        >
                           Ich möchte ein Objekt vorschlagen, das in der Ausstellung gezeigt werden
                           sollte
                         </FormDescription>
