@@ -774,7 +774,10 @@
                 <FormItem>
                   <FormLabel>Datierung</FormLabel>
                   <FormControl>
-                    <Input v-bind="field" placeholder="z.B. 1926 oder um 1930" />
+                    <Input
+                      v-bind="field"
+                      placeholder="z.B. '1926' oder 'um 1930' oder '15.08.2010'"
+                    />
                   </FormControl>
                   <FormDescription>Entstehungszeitraum oder Alter des Objekts</FormDescription>
                   <FormMessage>{{ errorMessage }}</FormMessage>
