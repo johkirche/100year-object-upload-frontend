@@ -406,21 +406,47 @@
     </div>
 
     <!-- Success Card (shown after submission) -->
-    <Card v-if="submittedValues && (isUploading || uploadSuccess)">
-      <CardHeader class="px-3 md:px-6">
-        <CardTitle>
-          <template v-if="isUploading">
-            <span v-if="submissionType === 'object'">Objekt wird hochgeladen...</span>
-            <span v-else>Wunsch wird hochgeladen...</span>
-          </template>
-          <template v-else-if="uploadSuccess">
-            <span v-if="submissionType === 'object'">Objekt erfolgreich hochgeladen!</span>
-            <span v-else>Wunsch erfolgreich hochgeladen!</span>
-          </template>
-        </CardTitle>
+    <Card v-if="submittedValues && (isUploading || uploadSuccess)" class="border-0 shadow-2xl">
+      <!-- Large Success Header with colored background -->
+      <div v-if="uploadSuccess" class="bg-primary text-white px-6 py-8 rounded-t-lg text-center">
+        <div class="text-3xl md:text-4xl font-bold mb-4">
+          ✅ Eingangsbestätigung
+        </div>
+        <div class="text-xl md:text-2xl mb-2">
+          <span v-if="submissionType === 'object'">Dein Objekt wurde erfolgreich eingereicht!</span>
+          <span v-else>Dein Wunsch wurde erfolgreich eingereicht!</span>
+        </div>
+        <div class="text-lg opacity-90">
+          Vielen Dank für deinen Beitrag zur Ausstellung "100 Jahre Johannische Kirche"
+        </div>
+      </div>
+      
+      <!-- Loading Header -->
+      <div v-else-if="isUploading" class="bg-blue-500 text-white px-6 py-8 rounded-t-lg text-center">
+        <div class="text-2xl md:text-3xl font-bold mb-2">
+          <span v-if="submissionType === 'object'">Objekt wird eingereicht...</span>
+          <span v-else>Wunsch wird eingereicht...</span>
+        </div>
+        <div class="text-lg opacity-90">
+          Bitte warten Sie einen Moment
+        </div>
+      </div>
+
+      <CardHeader class="px-3 md:px-6" v-if="uploadSuccess">
+        <CardTitle class="text-xl">Eingereichte Informationen</CardTitle>
         <CardDescription>
-          <p>Die folgenden Informationen wurden erfolgreich gespeichert:</p>
+          <p>Die folgenden Informationen wurden erfolgreich gespeichert und werden von unserem Team bearbeitet:</p>
         </CardDescription>
+        
+        <!-- What happens next info box -->
+        <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg mt-4">
+          <h4 class="font-medium text-blue-900 mb-2">📝 Wie geht es weiter?</h4>
+          <ul class="text-sm text-blue-800 space-y-1">
+            <li>• Dein Beitrag wird von unserem Ausstellungsteam geprüft</li>
+            <li v-if="submittedValues.kontaktRueckfrage">• Bei Rückfragen melden wir uns unter der angegebenen E-Mail-Adresse</li>
+            <li>• Du erhältst eine Benachrichtigung, wenn dein Beitrag für die Ausstellung ausgewählt wird</li>
+          </ul>
+        </div>
       </CardHeader>
       <CardContent class="px-3 md:px-6">
         <!-- Display Summary Data -->
@@ -469,20 +495,16 @@
           </div>
         </div>
 
-        <div v-if="submittedValues.beschreibung" class="mt-4">
+        <div v-if="submittedValues.beschreibung" class="mt-4 col-span-full">
           <strong class="block mb-1">Beschreibung:</strong>
-          <p
-            class="text-sm text-muted-foreground whitespace-pre-wrap bg-gray-50 p-2 rounded border"
-          >
+          <p class="text-sm text-muted-foreground whitespace-pre-wrap">
             {{ submittedValues.beschreibung }}
           </p>
         </div>
 
-        <div v-if="submittedValues.anmerkungEinreicher" class="mt-4">
+        <div v-if="submittedValues.anmerkungEinreicher" class="mt-4 col-span-full">
           <strong class="block mb-1">Anmerkung:</strong>
-          <p
-            class="text-sm text-muted-foreground whitespace-pre-wrap bg-gray-50 p-2 rounded border"
-          >
+          <p class="text-sm text-muted-foreground whitespace-pre-wrap">
             {{ submittedValues.anmerkungEinreicher }}
           </p>
         </div>
@@ -542,8 +564,12 @@
           </Button>
         </div>
       </CardContent>
-      <CardFooter class="px-3 md:px-6">
-        <Button @click="startNewUpload">Neuen Eintrag erstellen</Button>
+      <CardFooter class="px-3 md:px-6 pt-6" v-if="uploadSuccess">
+        <div class="w-full text-center">
+          <Button @click="startNewUpload" size="lg" class="bg-green-600 hover:bg-green-700 text-white px-8 py-3">
+            ✨ Weiteren Beitrag einreichen
+          </Button>
+        </div>
       </CardFooter>
     </Card>
 
