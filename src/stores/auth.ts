@@ -4,7 +4,6 @@ import { createDirectus, rest, authentication, readMe } from '@directus/sdk'
 import type { AuthenticationData } from '@directus/sdk'
 import type { Users } from '@/client/types.gen'
 
-
 // Storage class for persistent authentication
 class LocalStorage {
   private storageKey = 'directus-auth'
@@ -37,9 +36,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   // Use the proxy URL in development to avoid CORS issues
   // Must include the full URL (including protocol) for the SDK
-  const DIRECTUS_URL = isDev
-    ? window.location.origin + '/directus'
-    : directusServerUrl
+  const DIRECTUS_URL = isDev ? window.location.origin + '/directus' : directusServerUrl
 
   // Admin role ID from environment variable
   const ADMIN_ROLE_ID = import.meta.env.VITE_ADMIN_ROLE_ID
@@ -51,8 +48,7 @@ export const useAuthStore = defineStore('auth', () => {
   // Create storage for persistent authentication
   const storage = new LocalStorage()
 
-  console.log("DIRECTUS_URL: " + DIRECTUS_URL);
-
+  console.log('DIRECTUS_URL: ' + DIRECTUS_URL)
 
   // Create directus client with custom storage
   const directus = createDirectus(DIRECTUS_URL)
@@ -64,7 +60,6 @@ export const useAuthStore = defineStore('auth', () => {
     if (!directusUser.value) {
       return false
     }
-
 
     // Check if user has admin role by comparing role ID with the admin role ID
     let roleId: string | null = null
@@ -119,7 +114,6 @@ export const useAuthStore = defineStore('auth', () => {
         isLoading.value = false
       }
     }
-
   }
 
   /**
@@ -129,9 +123,11 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       // Get current user from Directus using the readMe helper
       // Request more fields to ensure we have complete role information
-      const currentUser = await directus.request(readMe({
-        fields: ['*', 'role.*']
-      })) as Partial<Users>
+      const currentUser = (await directus.request(
+        readMe({
+          fields: ['*', 'role.*']
+        })
+      )) as Partial<Users>
 
       if (currentUser) {
         directusUser.value = currentUser
@@ -162,7 +158,7 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       // Check if we need to convert the username to an email
       let loginEmail = username
-      
+
       // If the feature is enabled and the username doesn't contain @ (not an email)
       if (ENABLE_USERNAME_TO_EMAIL && !username.includes('@')) {
         loginEmail = `${username}@${DEFAULT_EMAIL_DOMAIN}`
@@ -216,13 +212,12 @@ export const useAuthStore = defineStore('auth', () => {
       if (typeof token === 'string') {
         return token
       }
-      return ''  // Return empty string if no token found
+      return '' // Return empty string if no token found
     } catch (e) {
       console.error('Error getting token:', e)
       return ''
     }
   }
-
 
   return {
     isAdmin,
@@ -237,4 +232,4 @@ export const useAuthStore = defineStore('auth', () => {
     getAuthToken,
     clearError
   }
-}) 
+})

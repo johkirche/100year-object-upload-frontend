@@ -32,7 +32,26 @@
         </div>
       </template>
 
-      <ObjektUploadForm class="mb-20" v-model="currentStep" />
+      <ObjektUploadForm class="mb-8" v-model="currentStep" />
+
+      <!-- Video Cards - Only visible in first step -->
+      <div v-if="currentStep === 'type-selection'" class="mb-20">
+        <h2 class="text-2xl font-bold text-center mb-6">Erfahren Sie mehr</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+          <VideoCard
+            title="100 Jahre Geschichte"
+            description="Entdecken Sie die bewegende Geschichte unserer Gemeinde"
+            thumbnail="/thumbnails/geschichte-thumbnail.jpg"
+            video-src="/videos/geschichte.mp4"
+          />
+          <VideoCard
+            title="Wie funktioniert der Upload?"
+            description="Eine kurze Anleitung zum Hochladen Ihrer Objekte"
+            thumbnail="/thumbnails/anleitung-thumbnail.jpg"
+            video-src="/videos/anleitung.mp4"
+          />
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -43,6 +62,7 @@
   import ObjektUploadForm from '@/components/objectupload/ObjektUploadForm.vue'
   import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
   import LogoComponent from '@/components/LogoComponent.vue'
+  import VideoCard from '@/components/VideoCard.vue'
   type FormStep = 'type-selection' | 'object-info' | 'submitter-info'
 
   interface Statistics {
