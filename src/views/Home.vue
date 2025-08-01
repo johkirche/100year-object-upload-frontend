@@ -39,16 +39,12 @@
         <h2 class="text-2xl font-bold text-center mb-6">Erfahren Sie mehr</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
           <VideoCard
-            title="100 Jahre Geschichte"
-            description="Entdecken Sie die bewegende Geschichte unserer Gemeinde"
-            thumbnail="/thumbnails/geschichte-thumbnail.jpg"
-            video-src="/videos/geschichte.mp4"
-          />
-          <VideoCard
-            title="Wie funktioniert der Upload?"
-            description="Eine kurze Anleitung zum Hochladen Ihrer Objekte"
-            thumbnail="/thumbnails/anleitung-thumbnail.jpg"
-            video-src="/videos/anleitung.mp4"
+            v-for="video in videoConfig"
+            :key="video.title"
+            :title="video.title"
+            :description="video.description"
+            :thumbnail="video.thumbnail"
+            :video-src="video.videoSrc"
           />
         </div>
       </div>
@@ -63,6 +59,7 @@
   import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
   import LogoComponent from '@/components/LogoComponent.vue'
   import VideoCard from '@/components/VideoCard.vue'
+  import { useVideoConfig } from '@/composables/useVideoConfig'
   type FormStep = 'type-selection' | 'object-info' | 'submitter-info'
 
   interface Statistics {
@@ -76,6 +73,7 @@
   const isLoading = ref(true)
   const currentStep = ref<FormStep>('type-selection')
   const error = ref(false)
+  const videoConfig = useVideoConfig()
 
   async function fetchStatistics() {
     isLoading.value = true
