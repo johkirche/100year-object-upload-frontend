@@ -23,7 +23,7 @@
     <Card class="max-w-md w-full relative z-10">
       <CardHeader>
         <CardTitle class="text-2xl font-bold tracking-tight">
-          Hunderte Objekte - eine Ausstellung!
+          Hundert Objekte - eine Ausstellung!
         </CardTitle>
         <CardDescription class="mt-2 text-lg font-bold tracking-tight">
           Wir sammeln für unsere Ausstellung zum Jubiläum von 100 Jahre Johannische Kirche.
