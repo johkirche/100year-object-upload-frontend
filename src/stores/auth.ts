@@ -172,8 +172,22 @@ export const useAuthStore = defineStore('auth', () => {
       await fetchCurrentUser()
 
       return true
-    } catch (err) {
-      error.value = 'Ungültiger Benutzername oder Passwort'
+    } catch (err: any) {
+      // Check if it's a network error (backend not reachable)
+      if (
+        err?.message?.includes('fetch') ||
+        err?.code === 'ECONNREFUSED' ||
+        err?.name === 'TypeError'
+      ) {
+        error.value = 'Der Server ist nicht erreichbar. Bitte versuchen Sie es später erneut.'
+      } else if (
+        err?.response?.status === 401 ||
+        err?.errors?.[0]?.extensions?.code === 'INVALID_CREDENTIALS'
+      ) {
+        error.value = 'Ungültiger Benutzername oder Passwort'
+      } else {
+        error.value = 'Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.'
+      }
       console.error('Login error:', err)
       return false
     } finally {
