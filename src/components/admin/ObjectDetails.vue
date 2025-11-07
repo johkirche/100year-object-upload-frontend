@@ -123,35 +123,14 @@
                     <p>{{ props.object.anmerkungEinreicher }}</p>
                 </div>
 
-                <!-- Category field with edit button -->
+                <!-- Category field -->
                 <div class="space-y-1">
-                    <div class="flex items-center space-x-2">
-                        <p class="font-medium">Kategorien:</p>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            class="h-6 w-6 p-0"
-                            title="Kategorien bearbeiten"
-                            @click="toggleCategoryEdit"
-                        >
-                            <span class="sr-only">{{
-                                isEditingCategories ? 'Speichern' : 'Bearbeiten'
-                            }}</span>
-                            <Check v-if="isEditingCategories" class="h-4 w-4" />
-                            <Edit v-else class="h-4 w-4" />
-                        </Button>
-                    </div>
-
-                    <div v-if="!isEditingCategories">
-                        <p>{{ formattedCategories }}</p>
-                    </div>
-                    <div v-else>
-                        <HierarchicalMultiSelect
-                            :options="categoryOptions"
-                            v-model="selectedCategories"
-                            placeholder="Kategorie(n) auswählen ..."
-                        />
-                    </div>
+                    <p class="font-medium">Kategorien:</p>
+                    <HierarchicalMultiSelect
+                        :options="categoryOptions"
+                        v-model="selectedCategories"
+                        placeholder="Kategorie(n) auswählen ..."
+                    />
                 </div>
             </div>
         </div>
@@ -398,7 +377,7 @@
 </template>
 
 <script setup lang="ts">
-    import { ref, computed, onMounted } from 'vue'
+    import { ref, computed, onMounted, watch } from 'vue'
     import {
         FileText,
         File,
@@ -407,8 +386,6 @@
         ExternalLink,
         Download,
         Maximize2,
-        Edit,
-        Check,
         Trash2,
         Loader2
     } from 'lucide-vue-next'
@@ -490,7 +467,6 @@
     })
 
     // Category editing functionality
-    const isEditingCategories = ref(false)
     const categoryOptions = ref<any[]>([])
     const categoryLookup = ref<Record<string, string>>({})
     const { getFieldOptions, buildCategoryLookup } = useObjects()
@@ -500,33 +476,23 @@
         Array.isArray(props.object.kategorie) ? props.object.kategorie : []
     )
 
-    // Format categories for display
-    const formattedCategories = computed(() => {
-        if (
-            !props.object.kategorie ||
-            !Array.isArray(props.object.kategorie) ||
-            props.object.kategorie.length === 0
-        ) {
-            return 'Keine Kategorien'
-        }
-        return props.object.kategorie
-            .map((cat: string) => categoryLookup.value[cat] || cat)
-            .join(', ')
-    })
+    // Debounced auto-save for categories
+    let categoryDebounceTimer: ReturnType<typeof setTimeout> | null = null
+    watch(
+        selectedCategories,
+        (newCategories) => {
+            // Clear existing timer
+            if (categoryDebounceTimer) {
+                clearTimeout(categoryDebounceTimer)
+            }
 
-    // Toggle category editing mode
-    const toggleCategoryEdit = () => {
-        if (isEditingCategories.value) {
-            // Save changes when exiting edit mode
-            emit('update-categories', props.object, selectedCategories.value)
-        } else {
-            // Enter edit mode - reset selection to current values
-            selectedCategories.value = Array.isArray(props.object.kategorie)
-                ? [...props.object.kategorie]
-                : []
-        }
-        isEditingCategories.value = !isEditingCategories.value
-    }
+            // Set a new timer to save after 500ms of no changes
+            categoryDebounceTimer = setTimeout(() => {
+                emit('update-categories', props.object, newCategories)
+            }, 500)
+        },
+        { deep: true }
+    )
 
     onMounted(async () => {
         try {
