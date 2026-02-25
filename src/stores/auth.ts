@@ -219,16 +219,32 @@ export const useAuthStore = defineStore('auth', () => {
     return directus
   }
 
-  // Get authentication token
+  // Get authentication token, refreshing if expired or about to expire
   async function getAuthToken(): Promise<string> {
     try {
+      const authData = storage.get()
+
+      // If token is expired or will expire within 30 seconds, refresh it
+      if (authData?.refresh_token && authData.expires_at) {
+        const now = Date.now()
+        const bufferMs = 30_000 // 30 second buffer
+        const timeLeftMs = authData.expires_at - now
+        const timeLeftSec = Math.round(timeLeftMs / 1000)
+        console.log(`[Auth] Token expires in ${timeLeftSec}s (${timeLeftMs > 0 ? 'valid' : 'EXPIRED'})`)
+        if (authData.expires_at < now + bufferMs) {
+          console.log('[Auth] Refreshing token...')
+          await directus.refresh()
+          console.log('[Auth] Token refreshed successfully')
+        }
+      }
+
       const token = await directus.getToken()
       if (typeof token === 'string') {
         return token
       }
-      return '' // Return empty string if no token found
+      return ''
     } catch (e) {
-      console.error('Error getting token:', e)
+      console.error('Error getting/refreshing token:', e)
       return ''
     }
   }

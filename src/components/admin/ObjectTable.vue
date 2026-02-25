@@ -56,20 +56,64 @@
       </TableComponent>
     </div>
 
-    <div class="flex items-center justify-end space-x-2 py-4">
-      <div class="space-x-2">
-        <Button variant="outline" size="sm" :disabled="!table.getCanPreviousPage()" @click="table.previousPage()">
-          Vorherige
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 py-4">
+      <!-- Items per page selector -->
+      <div class="flex items-center gap-2 text-sm">
+        <span class="text-muted-foreground whitespace-nowrap">Pro Seite:</span>
+        <Select :model-value="String(table.getState().pagination.pageSize)" @update:model-value="handlePageSizeChange">
+          <SelectTrigger class="w-[70px] h-8">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem v-for="size in pageSizeOptions" :key="size" :value="String(size)">
+              {{ size }}
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <!-- Page navigation -->
+      <div class="flex items-center gap-1">
+        <Button variant="outline" size="icon" class="h-8 w-8" :disabled="!table.getCanPreviousPage()"
+          @click="table.setPageIndex(0)">
+          <ChevronsLeft class="h-4 w-4" />
         </Button>
-        <Button variant="outline" size="sm" :disabled="!table.getCanNextPage()" @click="table.nextPage()">
-          Nächste
+        <Button variant="outline" size="icon" class="h-8 w-8" :disabled="!table.getCanPreviousPage()"
+          @click="table.previousPage()">
+          <ChevronLeft class="h-4 w-4" />
         </Button>
+
+        <template v-for="page in visiblePages" :key="page">
+          <Button v-if="page === '...'" variant="ghost" size="icon" class="h-8 w-8" disabled>
+            ...
+          </Button>
+          <Button v-else
+            :variant="page === table.getState().pagination.pageIndex + 1 ? 'default' : 'outline'"
+            size="icon" class="h-8 w-8" @click="table.setPageIndex((page as number) - 1)">
+            {{ page }}
+          </Button>
+        </template>
+
+        <Button variant="outline" size="icon" class="h-8 w-8" :disabled="!table.getCanNextPage()"
+          @click="table.nextPage()">
+          <ChevronRight class="h-4 w-4" />
+        </Button>
+        <Button variant="outline" size="icon" class="h-8 w-8" :disabled="!table.getCanNextPage()"
+          @click="table.setPageIndex(table.getPageCount() - 1)">
+          <ChevronsRight class="h-4 w-4" />
+        </Button>
+      </div>
+
+      <!-- Info text -->
+      <div class="text-sm text-muted-foreground whitespace-nowrap">
+        {{ paginationStart }}–{{ paginationEnd }} von {{ totalItems }}
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { ColumnDef } from '@tanstack/vue-table'
 import type { ItemsObjekt } from '@/client/types.gen'
 import { Button } from '@/components/ui/button'
@@ -79,6 +123,13 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {
   Table as TableComponent,
   TableBody,
@@ -90,16 +141,56 @@ import {
 import {
   FlexRender,
 } from '@tanstack/vue-table'
-import { ChevronDown } from 'lucide-vue-next'
+import { ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-vue-next'
 
-defineProps<{
+const props = defineProps<{
   table: any,
   columns: ColumnDef<ItemsObjekt>[],
+  totalItems: number,
   getFileType: (fileData: any) => 'image' | 'pdf' | 'video' | 'audio' | 'document' | 'other',
   getFileName: (fileData: any) => string,
   getImageThumbnailUrl: (fileData: any, width?: number, height?: number) => string,
   openAssetUrl: (fileData: any, download?: boolean) => void
 }>()
+
+const pageSizeOptions = [10, 20, 50, 100]
+
+const handlePageSizeChange = (value: any) => {
+  props.table.setPageSize(Number(value))
+}
+
+const visiblePages = computed(() => {
+  const total = props.table.getPageCount()
+  const current = props.table.getState().pagination.pageIndex + 1
+  const pages: (number | string)[] = []
+
+  if (total <= 7) {
+    for (let i = 1; i <= total; i++) pages.push(i)
+    return pages
+  }
+
+  pages.push(1)
+  if (current > 3) pages.push('...')
+
+  const start = Math.max(2, current - 1)
+  const end = Math.min(total - 1, current + 1)
+  for (let i = start; i <= end; i++) pages.push(i)
+
+  if (current < total - 2) pages.push('...')
+  pages.push(total)
+
+  return pages
+})
+
+const paginationStart = computed(() => {
+  const { pageIndex, pageSize } = props.table.getState().pagination
+  return pageIndex * pageSize + 1
+})
+
+const paginationEnd = computed(() => {
+  const { pageIndex, pageSize } = props.table.getState().pagination
+  return Math.min((pageIndex + 1) * pageSize, props.totalItems)
+})
 
 const emit = defineEmits<{
   'update-anmerkung': [objekt: ItemsObjekt, value: string],

@@ -29,6 +29,7 @@
         <ObjectTable
           :table="table"
           :columns="columns"
+          :total-items="totalItems"
           :get-file-type="getFileType"
           :get-file-name="getFileName"
           :get-image-thumbnail-url="getImageThumbnailWithToken"
@@ -138,13 +139,20 @@
     objects: data,
     isLoading,
     error,
+    totalItems,
     totalPages,
     currentPage,
     pageSize,
-    fetchObjects,
+    fetchObjects: fetchObjectsRaw,
     updateObjectField,
     deleteObject: deleteObjectFromDb
   } = useObjects()
+
+  // Wrap fetchObjects to refresh the auth token after each call
+  const fetchObjects = async (...args: Parameters<typeof fetchObjectsRaw>) => {
+    await fetchObjectsRaw(...args)
+    token.value = await authStore.getAuthToken()
+  }
 
   // Search state
   const searchQuery = ref('')
@@ -194,12 +202,16 @@
   // Callback when pagination or sorting changes
   const handleTableChange = (updatedState: any) => {
     if (updatedState && updatedState.pageIndex !== undefined) {
+      // Collapse all expanded rows when navigating
+      expanded.value = {}
+
       // Get the updated page index directly from the updated state
       const newPage = updatedState.pageIndex + 1
 
       // Always update current page and fetch data when pagination changes
       fetchObjects({
         page: newPage,
+        itemsPerPage: updatedState.pageSize ?? pageSize.value,
         query: searchQuery.value,
         sortBy:
           sorting.value.length > 0

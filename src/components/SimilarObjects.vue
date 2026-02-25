@@ -151,7 +151,7 @@ const {
   totalPages,
   currentPage,
   pageSize,
-  fetchObjects
+  fetchObjects: fetchObjectsRaw
 } = useObjects()
 
 // Set the page size from props
@@ -162,6 +162,12 @@ const searchQuery = ref(props.initialQuery)
 const searchTimeout = ref<number | null>(null)
 const authStore = useAuthStore()
 const token = ref('')
+
+// Wrap fetchObjects to refresh the auth token after each call
+const fetchObjects = async (...args: Parameters<typeof fetchObjectsRaw>) => {
+  await fetchObjectsRaw(...args)
+  token.value = await authStore.getAuthToken()
+}
 const selectedObject = ref<any>(null)
 const isDialogOpen = ref(false)
 const router = useRouter()

@@ -35,3 +35,4 @@ dist-ssr
 .env.test.local
 .env.test.local
 
+.claude/settings.local.json

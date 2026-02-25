@@ -9,7 +9,8 @@
     ArrowLeftIcon,
     ArrowRightIcon,
     ImageIcon,
-    MessageSquareIcon
+    MessageSquareIcon,
+    MousePointerClickIcon
   } from 'lucide-vue-next'
 
   import {
@@ -645,15 +646,19 @@
                     @update:model-value="field.onChange"
                   >
                     <div
-                      class="flex flex-col p-4 md:p-6 border rounded-md cursor-pointer"
+                      class="selection-card relative flex flex-col p-4 md:p-6 rounded-lg cursor-pointer transition-all duration-200"
                       :class="{
-                        'border-primary border-2 shadow-sm bg-primary text-white':
+                        'border-primary border-2 bg-primary text-white shadow-lg selection-card--active':
                           field.value === 'object',
-                        'border-input bg-white hover:bg-gray-50 form-text-color':
+                        'border-2 border-input bg-white hover:bg-gray-50 form-text-color hover:border-primary/50 selection-card--idle':
                           field.value !== 'object'
                       }"
                       @click="field.onChange('object')"
                     >
+                      <MousePointerClickIcon
+                        v-if="field.value !== 'object'"
+                        class="absolute top-3 right-3 h-5 w-5 text-primary/70"
+                      />
                       <FormControl>
                         <RadioGroupItem value="object" class="sr-only" />
                       </FormControl>
@@ -678,15 +683,19 @@
                     </div>
 
                     <div
-                      class="flex flex-col p-4 md:p-6 border rounded-md cursor-pointer"
+                      class="selection-card relative flex flex-col p-4 md:p-6 rounded-lg cursor-pointer transition-all duration-200"
                       :class="{
-                        'border-primary border-2 shadow-sm bg-primary text-white':
+                        'border-primary border-2 bg-primary text-white shadow-lg selection-card--active':
                           field.value === 'wish',
-                        'border-input bg-white hover:bg-gray-50 form-text-color':
+                        'border-2 border-input bg-white hover:bg-gray-50 form-text-color hover:border-primary/50 selection-card--idle':
                           field.value !== 'wish'
                       }"
                       @click="field.onChange('wish')"
                     >
+                      <MousePointerClickIcon
+                        v-if="field.value !== 'wish'"
+                        class="absolute top-3 right-3 h-5 w-5 text-primary/70"
+                      />
                       <FormControl>
                         <RadioGroupItem value="wish" class="sr-only" />
                       </FormControl>
@@ -1023,5 +1032,29 @@
 
   .bar-color-background {
     background-color: #004a94;
+  }
+
+  /* 3D pressable card effect */
+  .selection-card--idle {
+    box-shadow:
+      0 4px 8px -1px rgba(0, 0, 0, 0.12),
+      0 8px 0 -3px #d1d5db,
+      0 8px 0 -2px rgba(0, 0, 0, 0.15);
+    transform: translateY(0);
+  }
+
+  .selection-card--idle:hover {
+    box-shadow:
+      0 1px 3px 0 rgba(0, 0, 0, 0.1),
+      0 2px 0 -1px #d1d5db,
+      0 2px 0 0 rgba(0, 0, 0, 0.12);
+    transform: translateY(3px);
+  }
+
+  .selection-card--active {
+    box-shadow:
+      0 2px 6px 0 rgba(0, 74, 148, 0.35),
+      0 3px 0 -1px rgba(0, 74, 148, 0.5);
+    transform: translateY(1px);
   }
 </style>
