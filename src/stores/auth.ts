@@ -28,6 +28,9 @@ export const useAuthStore = defineStore('auth', () => {
   const isAuthenticated = ref(false)
   const isLoading = ref(false)
   const error = ref<string | null>(null)
+  const token = ref<string>('')
+
+  let refreshTimer: ReturnType<typeof setInterval> | null = null
 
   // Directus client setup
   // In development, use the proxy URL to avoid CORS issues
@@ -93,6 +96,8 @@ export const useAuthStore = defineStore('auth', () => {
             await directus.refresh()
             isAuthenticated.value = true
             await fetchCurrentUser()
+            await getAuthToken()
+            startTokenRefreshTimer()
           } catch (refreshErr) {
             console.error('Auth init: Token refresh failed:', refreshErr)
             // Clear invalid tokens
@@ -104,6 +109,8 @@ export const useAuthStore = defineStore('auth', () => {
           // Token is still valid, just fetch the user
           isAuthenticated.value = true
           await fetchCurrentUser()
+          await getAuthToken()
+          startTokenRefreshTimer()
         }
       } catch (err) {
         console.error('Auth init: Error initializing auth:', err)
@@ -170,6 +177,8 @@ export const useAuthStore = defineStore('auth', () => {
       // Set authentication status and fetch user data
       isAuthenticated.value = true
       await fetchCurrentUser()
+      await getAuthToken()
+      startTokenRefreshTimer()
 
       return true
     } catch (err: any) {
@@ -199,12 +208,14 @@ export const useAuthStore = defineStore('auth', () => {
    * Logs the user out
    */
   async function logout(): Promise<void> {
+    stopTokenRefreshTimer()
     try {
       await directus.logout()
 
       // Reset state
       directusUser.value = null
       isAuthenticated.value = false
+      token.value = ''
       // Clear storage
       storage.set(null)
     } catch (err) {
@@ -238,14 +249,26 @@ export const useAuthStore = defineStore('auth', () => {
         }
       }
 
-      const token = await directus.getToken()
-      if (typeof token === 'string') {
-        return token
-      }
-      return ''
+      const fetched = await directus.getToken()
+      token.value = typeof fetched === 'string' ? fetched : ''
+      return token.value
     } catch (e) {
       console.error('Error getting/refreshing token:', e)
       return ''
+    }
+  }
+
+  function startTokenRefreshTimer() {
+    stopTokenRefreshTimer()
+    refreshTimer = setInterval(() => {
+      getAuthToken()
+    }, 60_000) // refresh every 60 seconds
+  }
+
+  function stopTokenRefreshTimer() {
+    if (refreshTimer !== null) {
+      clearInterval(refreshTimer)
+      refreshTimer = null
     }
   }
 
@@ -254,6 +277,7 @@ export const useAuthStore = defineStore('auth', () => {
     isAuthenticated,
     isLoading,
     error,
+    token,
     DIRECTUS_URL,
     login,
     logout,

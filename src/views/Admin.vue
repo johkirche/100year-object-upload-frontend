@@ -34,7 +34,6 @@
           :get-file-name="getFileName"
           :get-image-thumbnail-url="getImageThumbnailWithToken"
           :open-asset-url="openAssetUrl"
-          @update-anmerkung="updateAnmerkung"
           @update-bewertung="updateBewertung"
           @update-categories="updateCategories"
           @delete-object="deleteObject"
@@ -62,7 +61,6 @@
               :get-file-name="getFileName"
               :get-image-thumbnail-url="getImageThumbnailWithToken"
               :open-asset-url="openAssetUrl"
-              @update-anmerkung="updateAnmerkung"
               @update-bewertung="updateBewertung"
               @update-categories="updateCategories"
               @delete-object="deleteObject"
@@ -121,16 +119,14 @@
   const directus = authStore.getClient()
   const { toast } = useToast()
 
-  const token = ref<string>('')
-
   // Function to get thumbnail URL with token
   const getImageThumbnailWithToken = (fileData: any, width = 150, height = 150) => {
-    return getImageThumbnailUrl(fileData, directus.url.toString(), token.value, width, height)
+    return getImageThumbnailUrl(fileData, directus.url.toString(), authStore.token, width, height)
   }
 
   // Function to get asset URL with token and open it
   const openAssetUrl = (fileData: any, download = false) => {
-    const url = getAssetUrl(fileData, directus.url.toString(), token.value, download)
+    const url = getAssetUrl(fileData, directus.url.toString(), authStore.token, download)
     if (url) window.open(url, '_blank')
   }
 
@@ -148,11 +144,7 @@
     deleteObject: deleteObjectFromDb
   } = useObjects()
 
-  // Wrap fetchObjects to refresh the auth token after each call
-  const fetchObjects = async (...args: Parameters<typeof fetchObjectsRaw>) => {
-    await fetchObjectsRaw(...args)
-    token.value = await authStore.getAuthToken()
-  }
+  const fetchObjects = fetchObjectsRaw
 
   // Search state
   const searchQuery = ref('')
@@ -221,10 +213,8 @@
     }
   }
 
-  onMounted(async () => {
-    // Initialize auth and fetch data
+  onMounted(() => {
     if (authStore.isAuthenticated) {
-      token.value = await authStore.getAuthToken()
       fetchObjects()
     } else {
       error.value = 'Bitte melden Sie sich an, um die Daten zu sehen'
@@ -245,19 +235,6 @@
     },
     { deep: true }
   )
-
-  const updateAnmerkung = async (objekt: ItemsObjekt, value: string) => {
-    if (objekt.id) {
-      const success = await updateObjectField(objekt.id, 'anmerkung', value)
-
-      if (success) {
-        toast({
-          title: 'Anmerkung gespeichert',
-          description: `Anmerkung für ${objekt.name} gespeichert`
-        })
-      }
-    }
-  }
 
   const updateBewertung = async (objekt: ItemsObjekt, value: number, label: string) => {
     if (objekt.id) {

@@ -17,8 +17,20 @@ export const getFileType = (fileData: any): 'image' | 'pdf' | 'video' | 'audio' 
     }
   }
   
-  if (!mimeType) return 'other';
-  
+  // Fall back to extension-based detection if no MIME type
+  if (!mimeType) {
+    const filename = (
+      (typeof fileData === 'object' && (fileData.filename_download || fileData.directus_files_id?.filename_download)) || ''
+    ).toLowerCase();
+    const ext = filename.split('.').pop() ?? '';
+    if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'tiff', 'ico', 'avif'].includes(ext)) return 'image';
+    if (ext === 'pdf') return 'pdf';
+    if (['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv'].includes(ext)) return 'video';
+    if (['mp3', 'wav', 'flac', 'aac', 'opus'].includes(ext)) return 'audio';
+    if (['doc', 'docx', 'odt', 'xls', 'xlsx', 'ppt', 'pptx'].includes(ext)) return 'document';
+    return 'other';
+  }
+
   // Determine file type based on MIME type
   if (mimeType.startsWith('image/')) {
     return 'image';

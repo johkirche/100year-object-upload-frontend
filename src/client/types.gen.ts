@@ -256,10 +256,19 @@ export type ItemsObjekt = {
     anmerkung?: string | null;
     type?: string | null;
     anmerkungEinreicher?: string | null;
+    label_ausstellung?: string | null;
+    infotext_ausstellung?: string | null;
+    umsetzungsideen?: Array<number | ItemsObjektUmsetzungsideen> | null;
     /**
      * Weitere Abbildungen oder ergänzende Dateien
      */
     weitereAbbildungen?: Array<number | ItemsObjektFiles> | null;
+};
+
+export type ItemsObjektUmsetzungsideen = {
+    id?: number;
+    objekt_id?: number | ItemsObjekt | null;
+    directus_files_id?: string | Files | null;
 };
 
 export type ItemsBewertungKleinerKreis = {

@@ -70,7 +70,12 @@ export function useObjects() {
       'aktuellerStandort',
       'weitereAbbildungen.id',
       'weitereAbbildungen.directus_files_id',
-      'weitereAbbildungen.directus_files_id.*'
+      'weitereAbbildungen.directus_files_id.*',
+      'label_ausstellung',
+      'infotext_ausstellung',
+      'umsetzungsideen.id',
+      'umsetzungsideen.directus_files_id',
+      'umsetzungsideen.directus_files_id.*'
     ],
     sortBy = ['name'],
     append = false

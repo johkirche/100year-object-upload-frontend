@@ -161,13 +161,8 @@ pageSize.value = props.itemsPerPage
 const searchQuery = ref(props.initialQuery)
 const searchTimeout = ref<number | null>(null)
 const authStore = useAuthStore()
-const token = ref('')
 
-// Wrap fetchObjects to refresh the auth token after each call
-const fetchObjects = async (...args: Parameters<typeof fetchObjectsRaw>) => {
-  await fetchObjectsRaw(...args)
-  token.value = await authStore.getAuthToken()
-}
+const fetchObjects = fetchObjectsRaw
 const selectedObject = ref<any>(null)
 const isDialogOpen = ref(false)
 const router = useRouter()
@@ -194,7 +189,7 @@ const closeDialog = () => {
 const getImageThumbnail = (fileData: any, width: number = 300, height: number = 300) => {
   if (!fileData) return ''
   const directusUrl = authStore.getClient().url.toString()
-  return getImageThumbnailUrl(fileData, directusUrl, token.value, width, height)
+  return getImageThumbnailUrl(fileData, directusUrl, authStore.token, width, height)
 }
 
 // Debounce search input
@@ -257,8 +252,6 @@ const openObjectSubmission = () => {
 // Lifecycle hooks
 onMounted(async () => {
   if (authStore.isAuthenticated) {
-    token.value = await authStore.getAuthToken()
-
     // Initial search if query is provided
     if (searchQuery.value) {
       await search()
